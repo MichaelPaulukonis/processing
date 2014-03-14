@@ -205,7 +205,7 @@ void keyPressed() {
         } else {
           setJitRange(-1);
         }        
-      } else if (keyCode == BACKSPACE || keycode == DELETE) {
+      } else if (keyCode == BACKSPACE || keyCode == DELETE) {
         clearScreen(); 
       }
     

@@ -48,34 +48,57 @@
 		<![endif]-->
 		<script src="processing.js" type="text/javascript"></script>
 		@@scripts@@
-	</head>
-	<body>
-		<div id="content">
-			<div>
-				<canvas id="@@id@@" data-processing-sources="@@sketch@@.pde"
-						width="@@width@@" height="@@height@@" tabindex="1">
-					<p>Your browser does not support the canvas tag.</p>
-					<!-- Note: you can put any alternative content here. -->
-				</canvas>
-				<noscript>
-					<p>JavaScript is required to view the contents of this page.</p>
-				</noscript>
-	    	</div>
-			<h1>@@sketch@@</h1>
-    		<p id="description">@@description@@</p>
-			<p id="sources">Source code: @@source@@</p>
-                        <p id="moresketches">More <a href="./PrantedMutter/Sketch">Web Sketches</a></p>
-			<p>
-			Built with <a href="http://processing.org" title="Processing">Processing</a>
-			and <a href="http://processingjs.org" title="Processing.js">Processing.js</a>
-			</p>
-		</div>
-                <script type="text/javascript">
-                  // sets focus w/o mouseclick
-                  var cvs = document.getElementsByTagName('canvas');
-                  if (cvs && cvs[0]) {
-                    cvs[0].focus();
-                  }
-                </script>
-	</body>
+</head>
+<body>
+  <div id="content">
+    <div>
+      <canvas id="@@id@@" data-processing-sources="@@sketch@@.pde"
+	      width="@@width@@" height="@@height@@" tabindex="1">
+	<p>Your browser does not support the canvas tag.</p>
+	<!-- Note: you can put any alternative content here. -->
+      </canvas>
+      <noscript>
+	<p>JavaScript is required to view the contents of this page.</p>
+      </noscript>
+    </div>
+    <h1>@@sketch@@</h1>
+    <p id="description">@@description@@</p>
+    <p>
+      <a id='savebtn' href="#" alt='enable pop-up blocker to open in new tab'>save</a>
+      -
+      <a id='focus' href='#' alt='set focus to canvas'>focus on canvas</a>
+    </p>
+    <p id="sources">Source code: @@source@@</p>
+    <p id="moresketches">More <a href="./PrantedMutter/Sketch">Web Sketches</a></p>
+    <p>
+      Built with <a href="http://processing.org" title="Processing">Processing</a>
+      and <a href="http://processingjs.org" title="Processing.js">Processing.js</a>
+    </p>
+  </div>
+  <script type="text/javascript">
+    // sets focus w/o mouseclick
+    var cvs = document.getElementsByTagName('canvas');
+    if (cvs && cvs[0]) {
+        cvs = cvs[0];
+    }
+
+    var setfocus = function() {
+        cvs.focus();
+    };
+
+    var savecanvas = function() {
+        if (cvs) {
+            img = cvs.toDataURL('image/jpg');
+            window.open(img, '_blank');
+        }
+    };
+
+    var sv = document.getElementById('savebtn');
+    sv.onclick = savecanvas;
+
+    var fc = document.getElementById('focus');
+    fc.onclick = setfocus;
+    setfocus();
+  </script>
+</body>
 </html>

@@ -7,34 +7,58 @@
 // looks for similar colors and flocks together -- could do with letters (or other concept)
 
 Flock flock;
+<<<<<<< HEAD
+// this should be externalized? so that Boids are populated from outside?
+// eh. or don't worry about it for now.
+// 65..90 97..122
+String lexsource = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+LexManager lm = new LexManager();
+=======
+>>>>>>> origin/master
 
 void setup() {
   size(600, 600);
 
+<<<<<<< HEAD
+  colorMode(HSB, 100);
+  flock = new Flock();
+=======
   colorMode(RGB, 255, 255, 255, 100);
   flock = new Flock();
   // Add an initial set of boids into the system
   //  for (int i = 0; i < 150; i++) {
   //    flock.addBoid(new Boid(new Vector3D(width/2, height/2), 2.0f, 0.05f));
   //  }
+>>>>>>> origin/master
   bigBang();
   smooth();
 }
 
 void draw() {
+<<<<<<< HEAD
+  background(20);
+=======
   background(100);
+>>>>>>> origin/master
   flock.run();
 }
 
 void reset() {
   flock = new Flock();
+<<<<<<< HEAD
+=======
   background(100);
+>>>>>>> origin/master
 }
 
 void bigBang() {
   // Add a set of boids into the system
   for (int i = 0; i < 50; i++) {
+<<<<<<< HEAD
+    flock.addBoid(new Boid(new Vector3D(width/2, height/2), 2.0f, 0.05f, lm.getChar()));
+=======
     flock.addBoid(new Boid(new Vector3D(width/2, height/2), 2.0f, 0.05f));
+>>>>>>> origin/master
   }
 }
 
@@ -42,7 +66,11 @@ void bigBang() {
 
 // Add a new boid into the System
 void mousePressed() {
+<<<<<<< HEAD
+  flock.addBoid(new Boid(new Vector3D(mouseX, mouseY), 2.0f, 0.05f, lm.getChar()));
+=======
   flock.addBoid(new Boid(new Vector3D(mouseX, mouseY), 2.0f, 0.05f));
+>>>>>>> origin/master
 }
 
 // how lexically close do Boids have to be to flock?
@@ -106,21 +134,41 @@ class Boid {
   float maxforce;    // Maximum steering force
   float maxspeed;    // Maximum speed
   String word;
+<<<<<<< HEAD
+
+  Boid(Vector3D l, float ms, float mf, char lex) {
+=======
   String source = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
   Boid(Vector3D l, float ms, float mf) {
+>>>>>>> origin/master
     acc = new Vector3D(0, 0);
     vel = new Vector3D(random(-1, 1), random(-1, 1));
     loc = l.copy();
     r = 2.0f;
     maxspeed = ms;
     maxforce = mf;
+<<<<<<< HEAD
+    word = lex + "";
+  } 
+=======
     word = randomChar() + "";
   }
+>>>>>>> origin/master
 
 
   char randomChar() {
 
+<<<<<<< HEAD
+    int i = int(random(lexsource.length()));
+    char w = lexsource.charAt(i);
+    return w;
+  }
+
+  // comparison to another word
+  // returns 0..10 similarity SOME DAY
+  // for now returns true/false
+=======
     int i = int(random(source.length()));
 
     char w = source.charAt(i);
@@ -130,6 +178,7 @@ class Boid {
 
   // comparison to another word
   // returns 0..10 similarity
+>>>>>>> origin/master
   boolean wordCompare(String other) {
 
     // some sort of distance in the source
@@ -189,6 +238,16 @@ class Boid {
     acc.add(steer(target, true));
   }
 
+<<<<<<< HEAD
+
+  // look into collisions causing a merge
+  // http://processing.org/discourse/beta/num_1230698202.html
+  // new method in LexManager -- hasText
+  // if the COMBINATION of the two lexical elements exists in the text, it is okay to combine.
+  
+
+=======
+>>>>>>> origin/master
   // A method that calculates a steering vector towards a target
   // Takes a second argument, if true, it slows down as it approaches the target
   Vector3D steer(Vector3D target, boolean slowdown) {
@@ -213,14 +272,30 @@ class Boid {
   }
 
   void render() {
+<<<<<<< HEAD
+    // Draw boid rotated in the direction of velocity
+    float theta = vel.heading2D() + radians(90);
+    
+    // TODO: make this calculation when word is changed
+    int v = (int)word.toUpperCase().charAt(0);
+    // 65..90
+    int h = (int)map(v, 65, 90, 0, 100);
+    fill(h, 100, 100);
+ 
+=======
     // Draw a triangle rotated in the direction of velocity
     float theta = vel.heading2D() + radians(90);
     fill(200);
     stroke(255);
+>>>>>>> origin/master
     pushMatrix();
     translate(loc.x, loc.y);
     rotate(theta);
     text(word, 0, 0);
+<<<<<<< HEAD
+    popMatrix();
+
+=======
     //    beginShape(TRIANGLES);
     //    vertex(0, -r*2);
     //    vertex(-r, r*2);
@@ -228,6 +303,7 @@ class Boid {
     //    endShape();
     popMatrix();
     //  text("x", loc.x, loc.y);
+>>>>>>> origin/master
   }
 
   // Wraparound

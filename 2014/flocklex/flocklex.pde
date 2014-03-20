@@ -7,70 +7,54 @@
 // looks for similar colors and flocks together -- could do with letters (or other concept)
 
 Flock flock;
-<<<<<<< HEAD
 // this should be externalized? so that Boids are populated from outside?
 // eh. or don't worry about it for now.
 // 65..90 97..122
 String lexsource = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 LexManager lm = new LexManager();
-=======
->>>>>>> origin/master
+boolean debug = false;
 
 void setup() {
   size(600, 600);
 
-<<<<<<< HEAD
   colorMode(HSB, 100);
   flock = new Flock();
-=======
-  colorMode(RGB, 255, 255, 255, 100);
-  flock = new Flock();
-  // Add an initial set of boids into the system
-  //  for (int i = 0; i < 150; i++) {
-  //    flock.addBoid(new Boid(new Vector3D(width/2, height/2), 2.0f, 0.05f));
-  //  }
->>>>>>> origin/master
+
   bigBang();
   smooth();
 }
 
 void draw() {
-<<<<<<< HEAD
   background(20);
-=======
-  background(100);
->>>>>>> origin/master
   flock.run();
 }
 
 void reset() {
   flock = new Flock();
-<<<<<<< HEAD
-=======
-  background(100);
->>>>>>> origin/master
 }
 
 void bigBang() {
   // Add a set of boids into the system
   for (int i = 0; i < 50; i++) {
-<<<<<<< HEAD
-    flock.addBoid(new Boid(new Vector3D(width/2, height/2), 2.0f, 0.05f, lm.getChar()));
-=======
-    flock.addBoid(new Boid(new Vector3D(width/2, height/2), 2.0f, 0.05f));
->>>>>>> origin/master
+    flock.addBoid(getBoid());
   }
 }
 
+Boid getBoid() {
+
+  Boid b;
+
+  char c = lm.getAlphaChar();
+
+  b = new Boid(new Vector3D(width/2, height/2), 2.0f, 0.05f, c);
+
+  return b;
+}
 
 
 // Add a new boid into the System
 void mousePressed() {
-<<<<<<< HEAD
-  flock.addBoid(new Boid(new Vector3D(mouseX, mouseY), 2.0f, 0.05f, lm.getChar()));
-=======
-  flock.addBoid(new Boid(new Vector3D(mouseX, mouseY), 2.0f, 0.05f));
->>>>>>> origin/master
+  flock.addBoid(getBoid());
 }
 
 // how lexically close do Boids have to be to flock?
@@ -86,7 +70,7 @@ void keyPressed() {
   switch(key) {
 
   case DELETE:
-  case BACKSPACE:  
+  case BACKSPACE:
     reset();
     break;
 
@@ -114,7 +98,7 @@ class Flock {
 
   void run() {
     for (int i = 0; i < boids.size(); i++) {
-      Boid b = (Boid) boids.get(i);  
+      Boid b = (Boid) boids.get(i);
       b.run(boids);  // Passing the entire list of boids to each boid individually
     }
   }
@@ -134,65 +118,42 @@ class Boid {
   float maxforce;    // Maximum steering force
   float maxspeed;    // Maximum speed
   String word;
-<<<<<<< HEAD
+  int compareVal;
+  int bcolor = 0;
 
   Boid(Vector3D l, float ms, float mf, char lex) {
-=======
-  String source = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-  Boid(Vector3D l, float ms, float mf) {
->>>>>>> origin/master
     acc = new Vector3D(0, 0);
     vel = new Vector3D(random(-1, 1), random(-1, 1));
     loc = l.copy();
     r = 2.0f;
     maxspeed = ms;
     maxforce = mf;
-<<<<<<< HEAD
     word = lex + "";
-  } 
-=======
-    word = randomChar() + "";
-  }
->>>>>>> origin/master
+    compareVal = (int)lex;
 
-
-  char randomChar() {
-
-<<<<<<< HEAD
-    int i = int(random(lexsource.length()));
-    char w = lexsource.charAt(i);
-    return w;
+    // TODO: make this calculation when word is changed
+    // NOTE: this is failing in processing.js
+    // char-to-int conversion works FINE if set as a char
+    // but NOT if retrieved from String.charAt()
+    // can't find any docs on this....
+    char c = word.toUpperCase().charAt(0);
+    int v = int(c);
+    if (debug) println("w: " + word.toUpperCase() + " char: " + word.toUpperCase().charAt(0) + " : " + v);
+    // 65..90
+    bcolor = int(map(v, 65, 90, 0, 99));
+    if (debug) println(word + " : " + bcolor);
   }
 
   // comparison to another word
   // returns 0..10 similarity SOME DAY
   // for now returns true/false
-=======
-    int i = int(random(source.length()));
-
-    char w = source.charAt(i);
-
-    return source.charAt(i);
-  }
-
-  // comparison to another word
-  // returns 0..10 similarity
->>>>>>> origin/master
-  boolean wordCompare(String other) {
+  boolean wordCompare(Boid other) {
 
     // some sort of distance in the source
     boolean closeEnough = false;
 
-    // the first approximation of affinity - same letter (case insensitive)
-    // closeEnough = (word.toUpperCase() == other.toUpperCase());
-
-    // case-insensitive
-    int wc = (int)word.toUpperCase().charAt(0);
-    int oc = (int)other.toUpperCase().charAt(0);
-
-    closeEnough = (abs(wc - oc) < affinityDistance);
-
+    // this is just ASCII-based affinity
+    closeEnough = (abs(compareVal - other.compareVal) < affinityDistance);
 
     return closeEnough;
   }
@@ -238,16 +199,13 @@ class Boid {
     acc.add(steer(target, true));
   }
 
-<<<<<<< HEAD
 
   // look into collisions causing a merge
   // http://processing.org/discourse/beta/num_1230698202.html
   // new method in LexManager -- hasText
   // if the COMBINATION of the two lexical elements exists in the text, it is okay to combine.
-  
 
-=======
->>>>>>> origin/master
+
   // A method that calculates a steering vector towards a target
   // Takes a second argument, if true, it slows down as it approaches the target
   Vector3D steer(Vector3D target, boolean slowdown) {
@@ -264,7 +222,7 @@ class Boid {
       // Steering = Desired minus Velocity
       steer = target.sub(desired, vel);
       steer.limit(maxforce);  // Limit to maximum steering force
-    } 
+    }
     else {
       steer = new Vector3D(0, 0);
     }
@@ -272,38 +230,21 @@ class Boid {
   }
 
   void render() {
-<<<<<<< HEAD
+
     // Draw boid rotated in the direction of velocity
     float theta = vel.heading2D() + radians(90);
-    
+
     // TODO: make this calculation when word is changed
-    int v = (int)word.toUpperCase().charAt(0);
-    // 65..90
-    int h = (int)map(v, 65, 90, 0, 100);
-    fill(h, 100, 100);
- 
-=======
-    // Draw a triangle rotated in the direction of velocity
-    float theta = vel.heading2D() + radians(90);
-    fill(200);
-    stroke(255);
->>>>>>> origin/master
+    //    int v = (int)word.toUpperCase().charAt(0);
+    //    // 65..90
+    //    int h = (int)map(v, 65, 90, 0, 99);
+    fill(bcolor, 100, 100);
+
     pushMatrix();
     translate(loc.x, loc.y);
     rotate(theta);
     text(word, 0, 0);
-<<<<<<< HEAD
     popMatrix();
-
-=======
-    //    beginShape(TRIANGLES);
-    //    vertex(0, -r*2);
-    //    vertex(-r, r*2);
-    //    vertex(r, r*2);
-    //    endShape();
-    popMatrix();
-    //  text("x", loc.x, loc.y);
->>>>>>> origin/master
   }
 
   // Wraparound
@@ -355,8 +296,8 @@ class Boid {
     for (int i = 0 ; i < boids.size(); i++) {
       Boid other = (Boid) boids.get(i);
       float d = loc.distance(loc, other.loc);
-      // TODO better lexical similarity; not precision  
-      if ((d > 0) && (d < neighbordist) && wordCompare(other.word)) {
+      // TODO better lexical similarity; not precision
+      if ((d > 0) && (d < neighbordist) && wordCompare(other)) {
         sum.add(other.vel);
         count++;
       }
@@ -378,7 +319,7 @@ class Boid {
     for (int i = 0 ; i < boids.size(); i++) {
       Boid other = (Boid) boids.get(i);
       float d = loc.distance(loc, other.loc);
-      if ((d > 0) && (d < neighbordist) && wordCompare(other.word)) {
+      if ((d > 0) && (d < neighbordist) && wordCompare(other)) {
         sum.add(other.loc); // Add location
         count++;
       }
@@ -391,7 +332,7 @@ class Boid {
   }
 }
 
-// Simple Vector3D Class 
+// Simple Vector3D Class
 
 static class Vector3D {
   float x;
@@ -399,20 +340,20 @@ static class Vector3D {
   float z;
 
   Vector3D(float x_, float y_, float z_) {
-    x = x_; 
-    y = y_; 
+    x = x_;
+    y = y_;
     z = z_;
   }
 
   Vector3D(float x_, float y_) {
-    x = x_; 
-    y = y_; 
+    x = x_;
+    y = y_;
     z = 0f;
   }
 
   Vector3D() {
-    x = 0f; 
-    y = 0f; 
+    x = 0f;
+    y = 0f;
     z = 0f;
   }
 

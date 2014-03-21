@@ -2,17 +2,17 @@
  A text-painter, with color coming (primarily) from 4 possible images.
  Try painting a grid, reducing the size, and painting again!
 
-  UP/DOWN - change text size
-  LEFT/RIGHT - change amount of "jitter" (random offset for painting)
-  a - toggle AutoPaint (on/off)
-  1,2,3,4 - change color-source image
-            stored as square "001.jpg" etc, in the data folder
-  g - paint a grid of text covering entire screen
-  m/M - change paint Mode (the default mode takes color from images)
-  s - save
-  x - change black/white mode. mostly applies to alternate paint modes, or clearing screen
-  DELETE - clear screen; sets to white/black depending upon black/white mode (default: black)
-*/
+ UP/DOWN - change text size
+ LEFT/RIGHT - change amount of "jitter" (random offset for painting)
+ a - toggle AutoPaint (on/off)
+ 1,2,3,4 - change color-source image
+ stored as square "001.jpg" etc, in the data folder
+ g - paint a grid of text covering entire screen
+ m/M - change paint Mode (the default mode takes color from images)
+ s - save
+ x - change black/white mode. mostly applies to alternate paint modes, or clearing screen
+ DELETE - clear screen; sets to white/black depending upon black/white mode (default: black)
+ */
 
 
 TextManager t;
@@ -23,7 +23,7 @@ boolean blackNotWhite = false;
 PImage img;
 
 void setup() {
-  size(600, 600);
+  size(800, 800);
   colorMode(HSB, width, height, 100);
   clearScreen();
   t = new TextManager();
@@ -41,18 +41,46 @@ void draw() {
   }
 
   if (mousePressed && mouseY > 0 && mouseY < height
-        && mouseX > 0 && mouseX < width) {
+    && mouseX > 0 && mouseX < width) {
     paintWordAtPoint(mouseX, mouseY);
   }
 }
 
 void paintWordAtPoint(int locX, int locY) {
+  if (randomSizeMode) {
+    spatterWordAtPoint(locX, locY);
+  }
+  else {
+    paintStaticSizedWordAtPoint(locX, locY);
+  }
+}
+
+void paintStaticSizedWordAtPoint(int locX, int locY) {
 
   // absolute positioning
   float offX = getJitter(), offY = getJitter();
   setFill(locX + (int)offX, locY +(int)offY);
   text(t.getWord(), locX + offX, locY + offY);
+}
 
+// paint words AROUND the point in different sizes
+void spatterWordAtPoint(int locX, int locY) {
+
+  int origTextSize = textsize;
+
+  textSize(randomTextSize(origTextSize));
+
+  paintStaticSizedWordAtPoint(locX, locY);
+
+  textSize(origTextSize); // restore original size
+}
+
+
+int randomTextSize(int prevSize) {
+  int offset = (int)getJitter();
+  int newsize = offset + prevSize;
+  if (newsize < 2) newsize = 2;
+  return newsize;
 }
 
 
@@ -84,22 +112,21 @@ void setJitRange(int direction) {
 /* @pjs preload="001.jpg,002.jpg,003.jpg,004.jpg"; */
 void setImage(int image) {
   switch(image) {
-    case 1:
-      img = loadImage("001.jpg");
-      break;
+  case 1:
+    img = loadImage("001.jpg");
+    break;
 
-    case 2:
-      img = loadImage("002.jpg");
-      break;
+  case 2:
+    img = loadImage("002.jpg");
+    break;
 
-    case 3:
-      img = loadImage("003.jpg");
-      break;
+  case 3:
+    img = loadImage("003.jpg");
+    break;
 
-    case 4:
-      img = loadImage("004.jpg");
-      break;
-
+  case 4:
+    img = loadImage("004.jpg");
+    break;
   }
 
   img.resize(0, height);
@@ -143,30 +170,31 @@ void setFill(int locX, int locY) {
 
   switch(curPaintMode) {
 
-    case 0:
-    default:
-      if (blackNotWhite) {
-        fill(0, height, 0);
-      } else {
-        fill(0, 0, 100);
-      }
+  case 0:
+  default:
+    if (blackNotWhite) {
+      fill(0, height, 0);
+    }
+    else {
+      fill(0, 0, 100);
+    }
 
-      break;
+    break;
 
     // this is the one I'm really interested in for the project
-    case 2:
-      int loc = locX + locY * width;
-//      println(loc + "/" + img.pixels.length + " locX: " + locX + " locY: " + locY);
-      float h = hue(img.pixels[loc]);
-      float s = saturation(img.pixels[loc]);
-      float b = brightness(img.pixels[loc]);
-      fill(h, s, b);
-      break;
+  case 2:
+    int loc = locX + locY * width;
+    //      println(loc + "/" + img.pixels.length + " locX: " + locX + " locY: " + locY);
+    float h = hue(img.pixels[loc]);
+    float s = saturation(img.pixels[loc]);
+    float b = brightness(img.pixels[loc]);
+    fill(h, s, b);
+    break;
 
-    case 1:
-      // TODO: fill based on... mouseX/MouseY + offset?
-      fill(locX, locY, 100);
-      break;
+  case 1:
+    // TODO: fill based on... mouseX/MouseY + offset?
+    fill(locX, locY, 100);
+    break;
   }
 }
 
@@ -177,10 +205,15 @@ void toggleAutoPaintMode() {
 
 void autoPaintRegion(int minX, int minY, int maxX, int maxY) {
   int locX = (int)random(minX, maxX),
-        locY = (int)random(minY, maxY);
+  locY = (int)random(minY, maxY);
   paintWordAtPoint(locX, locY);
 }
 
+
+boolean randomSizeMode = false;
+void toggleRandomSizeMode() {
+  randomSizeMode = !randomSizeMode;
+}
 
 String save() {
   String filename = "image.text." + frameCount + ".png";
@@ -195,78 +228,84 @@ void keyPressed() {
   if (key == CODED) {
     if (keyCode == UP || keyCode == DOWN) {
       if (keyCode == UP) {
-          changeTextsize(1);
-        } else {
-          changeTextsize(-1);
-        }
-      } else if (keyCode == RIGHT || keyCode == LEFT) {
-      if (keyCode == RIGHT) {
-          setJitRange(1);
-        } else {
-          setJitRange(-1);
-        }
-      } else if (keyCode == BACKSPACE || keyCode == DELETE) {
-        clearScreen();
+        changeTextsize(1);
       }
+      else {
+        changeTextsize(-1);
+      }
+    }
+    else if (keyCode == RIGHT || keyCode == LEFT) {
+      if (keyCode == RIGHT) {
+        setJitRange(1);
+      }
+      else {
+        setJitRange(-1);
+      }
+    }
+  }
 
+  if (keyCode == BACKSPACE || keyCode == DELETE) {
+    clearScreen();
   }
 
   switch(key) {
 
-    case '1':
-      setImage(1);
-      break;
+  case '1':
+    setImage(1);
+    break;
 
-    case '2':
-      setImage(2);
-      break;
+  case '2':
+    setImage(2);
+    break;
 
-    case '3':
-      setImage(3);
-      break;
+  case '3':
+    setImage(3);
+    break;
 
-    case '4':
-      setImage(4);
-      break;
+  case '4':
+    setImage(4);
+    break;
 
-    case 'a':
-      toggleAutoPaintMode();
-      break;
+  case 'a':
+    toggleAutoPaintMode();
+    break;
 
-    case 'c':
-      clearScreen();
-      break;
+  case 'c':
+    clearScreen();
+    break;
 
-    case 'g':
-      paintGrid();
-      break;
+  case 'g':
+    paintGrid();
+    break;
 
-    case 'm':
-      nextPaintMode(1);
-      break;
-    case 'M':
-      nextPaintMode(-1);
-      break;
+  case 'm':
+    nextPaintMode(1);
+    break;
+  case 'M':
+    nextPaintMode(-1);
+    break;
 
-    case 's':
-      save();
-      break;
+  case 'r':
+    toggleRandomSizeMode();
+    break;
 
-    case 'x':
-    case 'X':
-      blackNotWhite = !blackNotWhite;
-      setFill(mouseX, mouseY);
-      break;
+  case 's':
+    save();
+    break;
+
+  case 'x':
+  case 'X':
+    blackNotWhite = !blackNotWhite;
+    setFill(mouseX, mouseY);
+    break;
 
     // not working in processing.js
-    case DELETE:
-    case BACKSPACE:
-      clearScreen();
-      break;
+  case DELETE:
+  case BACKSPACE:
+    clearScreen();
+    break;
   }
-
 }
-
 
 
 class TextManager {
@@ -302,3 +341,4 @@ class TextManager {
   }
 
 }
+

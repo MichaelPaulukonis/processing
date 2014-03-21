@@ -26,14 +26,17 @@ class LexManager {
 
   char getAlphaChar() {
 
-    String c = " ";
+    char c = ' ';
 
-    while ( (c.toUpperCase().charAt(0) < 'A') || (c.toUpperCase().charAt(0) > 'Z') ) {
-      c = getChar() + "";
+    // when converting to javascript, delete the <+ "">
+    // while ( matchAll(c, "[a-zA-Z]") == null ) {
+    while ( matchAll(c + "", "[a-zA-Z]") == null ) {
+      c = getChar();
     }
 
-    return c.charAt(0);
+    return c;
   }
+
 
   String getWord() {
     String word = words[wordIndex];
@@ -42,7 +45,6 @@ class LexManager {
   }
 
   Boolean hasText(String text) {
-
     return defaultText.indexOf(text) != -1;
   }
 }

@@ -12,7 +12,7 @@ Flock flock;
 // 65..90 97..122
 String lexsource = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 LexManager lm = new LexManager();
-boolean debug = false;
+boolean debug = true;
 
 void setup() {
   size(600, 600);
@@ -45,7 +45,6 @@ Boid getBoid() {
   Boid b;
 
   char c = lm.getAlphaChar();
-
   b = new Boid(new Vector3D(width/2, height/2), 2.0f, 0.05f, c);
 
   return b;
@@ -136,6 +135,8 @@ class Boid {
     // char-to-int conversion works FINE if set as a char
     // but NOT if retrieved from String.charAt()
     // can't find any docs on this....
+    // when converting to JavaScript, must change to
+    //int v = word.toUpperCase().charCodeAt(0);
     char c = word.toUpperCase().charAt(0);
     int v = int(c);
     if (debug) println("w: " + word.toUpperCase() + " char: " + word.toUpperCase().charAt(0) + " : " + v);

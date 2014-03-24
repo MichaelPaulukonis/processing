@@ -10,13 +10,17 @@ int stepCount = 1;
 int curSecond;
 int autoDirection = 1; // direction of expansion
 
+/* @pjs preload="pablo.gogs.dream.jpg"; */
+
 void setup()
 {
+  size(447, 600); // for processing.js MUST be first line
   noStroke();
 
   img = loadImage("pablo.gogs.dream.jpg");
-  size(img.width, img.height);
-  pixStep = int(width/40); // auto-reverse after 20 steps
+  //size(img.width, img.height);
+
+  //pixStep = int(width/40); // auto-reverse after 20 steps
 
   pixelateImage(pixSize);    // argument is resulting pixel size
   curSecond = second();
@@ -35,26 +39,15 @@ void draw()
   }
 }
 
-
+// there's an issue where the right-hand strip comes and goes
+// it's an average problem. probably "correct"
+// but I don't like how it looks in a sequence
 void pixelateImage(int pxSize) {
 
-  // use ratio of height/width...
-  float ratio;
-  if (width < height) {
-    ratio = height/width;
-  }
-  else {
-    ratio = width/height;
-  }
-
-  // ... to set pixel height
-  int pxH = int(pxSize * ratio);
-
-  noStroke();
   for (int x=0; x<width; x+=pxSize) {
-    for (int y=0; y<height; y+=pxH) {
+    for (int y=0; y<height; y+=pxSize) {
       fill(getColor(x, y));
-      rect(x, y, pxSize, pxH);
+      rect(x, y, pxSize, pxSize);
     }
   }
 }
@@ -64,23 +57,26 @@ void pixelateImage(int pxSize) {
 // but works for what I'm currently doing....
 color getColor(int xLoc, int yLoc) {
 
-  int r=0, b=0, g=0, pixelCount=0;
+  float r=0, b=0, g=0;
+  int pixelCount=0;
 
   for (int y = yLoc; y < yLoc + pixSize; y++) {
     for (int x = xLoc; x < xLoc + pixSize; x++) {
-      color c = img.get(x, y);
-      r += red(c);
-      g += green(c);
-      b += blue(c);
-      pixelCount++;
+      // trap for out-of bounds "averages"
+      // which skew towards black
+      if (x<width && y < height) {
+        color c = img.get(x, y);
+        r += red(c);
+        g += green(c);
+        b += blue(c);
+        pixelCount++;
+      }
     }
   }
 
-  color averageColor = color(int(r/pixelCount), int(g/pixelCount), int(b/pixelCount));
+  color averageColor = color(r/pixelCount, g/pixelCount, b/pixelCount);
 
   return averageColor;
-
-  //return img.get(xLoc, yLoc);
 }
 
 

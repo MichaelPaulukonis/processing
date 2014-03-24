@@ -5,16 +5,18 @@
 PImage img;
 int pixStep = 5;
 int pixSize = 5;
+int maxSteps = 12;
+int stepCount = 1;
 int curSecond;
 int autoDirection = 1; // direction of expansion
 
 void setup()
 {
   noStroke();
-  
+
   img = loadImage("pablo.gogs.dream.jpg");
   size(img.width, img.height);
-  pixStep = int(width/20); // auto-reverse after 20 steps
+  pixStep = int(width/40); // auto-reverse after 20 steps
 
   pixelateImage(pixSize);    // argument is resulting pixel size
   curSecond = second();
@@ -25,6 +27,10 @@ void draw()
   if (second() != curSecond) {
     setPixSize(autoDirection);
     pixelateImage(pixSize);
+    stepCount += autoDirection;
+    if (stepCount >= maxSteps || stepCount <= 0) {
+      autoDirection = -(autoDirection);
+    }
     curSecond = second();
   }
 }
@@ -53,11 +59,28 @@ void pixelateImage(int pxSize) {
   }
 }
 
-// TODO make it an average
-// http://forum.processing.org/one/topic/getting-average-pixel-color-value-from-a-pimage-that-is-constantly-changing.html
-// this will also require some sort of offset
-int getColor(int x, int y) {
-  return img.get(x, y);
+// average code based on http://stackoverflow.com/a/12408627/41153
+// this is likely to fail if xLoc,yLoc is with pixSize of width,height
+// but works for what I'm currently doing....
+color getColor(int xLoc, int yLoc) {
+
+  int r=0, b=0, g=0, pixelCount=0;
+
+  for (int y = yLoc; y < yLoc + pixSize; y++) {
+    for (int x = xLoc; x < xLoc + pixSize; x++) {
+      color c = img.get(x, y);
+      r += red(c);
+      g += green(c);
+      b += blue(c);
+      pixelCount++;
+    }
+  }
+
+  color averageColor = color(int(r/pixelCount), int(g/pixelCount), int(b/pixelCount));
+
+  return averageColor;
+
+  //return img.get(xLoc, yLoc);
 }
 
 
@@ -65,12 +88,7 @@ void setPixSize(int direction) {
   pixSize = (pixSize + (direction * pixStep));
   if (pixSize < pixStep) pixSize = pixStep;
   if (pixSize > width) {
-   autoDirection = -(autoDirection); 
+    autoDirection = -(autoDirection);
   }
-}
-
-void mousePressed() {
-  setPixSize(1);
-  pixelateImage(pixSize);
 }
 

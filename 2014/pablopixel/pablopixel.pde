@@ -14,28 +14,33 @@ int autoDirection = 1; // direction of expansion
 
 void setup()
 {
-  size(447, 600); // for processing.js MUST be first line
+  size(440, 600); // for processing.js MUST be first line
   noStroke();
 
   img = loadImage("pablo.gogs.dream.jpg");
-  //size(img.width, img.height);
+  background(#000000);
 
   //pixStep = int(width/40); // auto-reverse after 20 steps
 
   pixelateImage(pixSize);    // argument is resulting pixel size
-  curSecond = second();
+
+    curSecond = second();
+
+  while (curSq < 25) {
+    drawPix();
+  }
 }
 
-void draw()
+// loop purely for manual monitoring
+// for export [for, say, a gif], do it faster
+void drawPix()
 {
-  if (second() != curSecond) {
-    setPixSize(autoDirection);
-    pixelateImage(pixSize);
-    stepCount += autoDirection;
-    if (stepCount >= maxSteps || stepCount <= 0) {
-      autoDirection = -(autoDirection);
-    }
-    curSecond = second();
+  setPixSize(autoDirection);
+  pixelateImage(pixSize);
+
+  stepCount += autoDirection;
+  if (stepCount >= maxSteps) {
+    autoDirection = -(autoDirection);
   }
 }
 
@@ -50,6 +55,8 @@ void pixelateImage(int pxSize) {
       rect(x, y, pxSize, pxSize);
     }
   }
+
+  saveFrame("frame-" + sequenceNbr() + ".png");
 }
 
 // average code based on http://stackoverflow.com/a/12408627/41153
@@ -86,5 +93,11 @@ void setPixSize(int direction) {
   if (pixSize > width) {
     autoDirection = -(autoDirection);
   }
+}
+
+
+int curSq = 0;
+String sequenceNbr() {
+  return nf(curSq++, 5);
 }
 

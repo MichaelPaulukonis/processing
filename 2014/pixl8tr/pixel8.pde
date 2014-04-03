@@ -24,9 +24,8 @@ void setup() {
 }
 
 
-void draw()
-{
-  if (millis() - m > 100) {
+void draw() {
+  if (!pixel8.paused && (millis() - m > pixel8.speed)) {
     setPixSize(autoDirection);
     pixelateImage(pixSize);
     stepCount += autoDirection;

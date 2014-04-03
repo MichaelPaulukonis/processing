@@ -25,17 +25,22 @@ void setup() {
 
 
 void draw() {
-  if (!pixel8.paused && (millis() - m > pixel8.speed)) {
-    setPixSize(autoDirection);
-    pixelateImage(pixSize);
-    stepCount += autoDirection;
-    if (stepCount >= maxSteps || stepCount <= 0) {
-      autoDirection = -(autoDirection);
-    }
+  if (pixel8.paused && singlestep == true) {
+
+    drawPix();
+    m = millis();
+    singlestep = false;
+
+  } else if (!pixel8.paused && (millis() - m > pixel8.speed)) {
+
+    drawPix();
 
     m = millis();
   }
 }
+
+
+
 
 // loop purely for manual monitoring
 // for export [for, say, a gif], do it faster
@@ -45,7 +50,7 @@ void drawPix()
   pixelateImage(pixSize);
 
   stepCount += autoDirection;
-  if (stepCount >= maxSteps) {
+  if (stepCount >= maxSteps || stepCount <= 0) {
     autoDirection = -(autoDirection);
   }
 }

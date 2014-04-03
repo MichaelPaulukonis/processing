@@ -1,3 +1,4 @@
+
 /*
 
  NOTES
@@ -30,13 +31,16 @@
 // dynamic loading of sketch - say, if we need to know the sketch SIZE, for instance...
 // http://stackoverflow.com/questions/14528558/load-processing-js-sketch-after-window-is-fully-loaded-with-innerhtml
 
-var uri = "", iwidth = 100, iheight = 100;
+var uri = "",
+    iwidth = 100,
+    iheight = 100,
+    singlestep = false;
 
 
 var pixel8 = {
     paused: false,
     speed: 100,
-    step: function() { console.log('clicked'); }
+    step: function() { console.log('clicked'); singlestep = true; }
 };
 
 // http://www.html5rocks.com/en/tutorials/file/dndfiles/
@@ -65,10 +69,7 @@ function handleFileSelect(evt) {
                     iwidth = img.width;
                     iheight = img.height;
 
-                    var oldc = document.getElementById('jstest');
-                    if (oldc) {
-                        oldc.parentNode.removeChild(oldc);
-                    }
+                    cleanUp();
 
                     var c = document.createElement('canvas');
                     c.setAttribute('width', iwidth);
@@ -89,11 +90,40 @@ function handleFileSelect(evt) {
     }
 }
 
+
+var removeOldCanvas = function() {
+
+    var oldc = document.getElementById('jstest');
+    if (oldc) {
+        oldc.parentNode.removeChild(oldc);
+    }
+
+};
+
+var setupGui = function() {
+
+    var oldg = document.getElementsByClassName('dg ac');
+    if (oldg.length === 0) {
+
+        var gui = new dat.GUI();
+
+        gui.add(pixel8, 'speed').min(10).max(1000).step(10);
+        gui.add(pixel8, 'paused');
+        gui.add(pixel8, 'step'); // this DOES fire; somehow, advance ONE frame when paused
+
+    }
+
+};
+
+
+var cleanUp = function() {
+
+    removeOldCanvas();
+
+    setupGui();
+
+};
+
+
 // TODO: drag-n-drop uploads
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
-
-var gui = new dat.GUI();
-
-gui.add(pixel8, 'speed').min(10).max(1000).step(10);
-gui.add(pixel8, 'paused');
-gui.add(pixel8, 'step'); // this DOES fire; somehow, advance ONE frame when paused

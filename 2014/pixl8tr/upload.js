@@ -34,8 +34,11 @@
 var uri = "",
     iwidth = 100,
     iheight = 100,
-    singlestep = false;
-
+    singlestep = false,
+    encoder,
+    binary_gif,
+    gif_url,
+    gifOut;
 
 var pixel8 = {
     paused: false,
@@ -61,6 +64,7 @@ function handleFileSelect(evt) {
         reader.onload = (function(theFile) {
 
             return function(e) {
+                gifOut = document.getElementById('generated');
                 var img = document.getElementById('uploaded');
                 uri = e.target.result;
                 document.getElementById('uploaded').src = uri;
@@ -120,7 +124,11 @@ var cleanUp = function() {
 
     removeOldCanvas();
 
+    // TODO: remove old gif
+
     setupGui();
+
+    encoder = new GIFEncoder();
 
 };
 

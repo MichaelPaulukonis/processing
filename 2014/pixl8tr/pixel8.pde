@@ -9,36 +9,68 @@ int maxSteps = 12;
 int stepCount = 1;
 int m;
 int autoDirection = 1; // direction of expansion
-
+int revCount = 0;
+boolean firstFrame = true;
 
 void setup() {
   size(iwidth, iheight);
   noStroke();
 
-  img = loadImage(uri);
+  encoder.setRepeat(0);
+  encoder.setDelay(500);
+  encoder.start();
 
-  image(img, 0, 0);
+  img = loadImage(uri); // still has a loading time....
 
   m = millis();
+
+  console.log("started");
 
 }
 
 
 void draw() {
-  if (pixel8.paused && singlestep == true) {
 
-    drawPix();
-    m = millis();
-    singlestep = false;
+  if (img.pixels.length <= 10) return;
 
-  } else if (!pixel8.paused && (millis() - m > pixel8.speed)) {
+  // wait until image is REALLY loaded
+  // from URI
+  // hunh.
+  if (firstFrame) {
+    firstFrame = false;
 
-    drawPix();
+    console.log(img.pixels.length);
 
-    m = millis();
+    image(img, 0, 0);
+
+    encoder.addFrame(externals.context);
+    encoder.setDelay(pixel8.speed);
+  }
+
+  if (revCount == 2) {
+    encoder.finish();
+    binary_gif = encoder.stream().getData();
+    gif_url = 'data:image/gif;base64,' + encode64(binary_gif);
+    gifOut.src = gif_url;
+    noLoop();
+    image(img, 0, 0); // THIS output the image, though. so... pre-load issue ???
+
+  } else {
+
+    if (pixel8.paused && singlestep == true) {
+
+      drawPix();
+      m = millis();
+      singlestep = false;
+
+    } else if (!pixel8.paused && (millis() - m > pixel8.speed)) {
+
+      drawPix();
+
+      m = millis();
+    }
   }
 }
-
 
 
 
@@ -46,13 +78,19 @@ void draw() {
 // for export [for, say, a gif], do it faster
 void drawPix()
 {
+
   setPixSize(autoDirection);
   pixelateImage(pixSize);
 
   stepCount += autoDirection;
   if (stepCount >= maxSteps || stepCount <= 0) {
     autoDirection = -(autoDirection);
+    revCount++;
+    console.log(revCount);
   }
+
+  encoder.addFrame(externals.context);
+
 }
 
 // there's an issue where the right-hand strip comes and goes
@@ -67,7 +105,6 @@ void pixelateImage(int pxSize) {
     }
   }
 
-  // gitsaveFrame("frame-" + sequenceNbr() + ".png");
 }
 
 // average code based on http://stackoverflow.com/a/12408627/41153
@@ -103,6 +140,7 @@ void setPixSize(int direction) {
   if (pixSize < pixStep) pixSize = pixStep;
   if (pixSize > width) {
     autoDirection = -(autoDirection);
+    console.log('reversed!');
   }
 }
 

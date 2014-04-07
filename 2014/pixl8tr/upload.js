@@ -43,7 +43,10 @@ var uri = "",
 var pixel8 = {
     paused: false,
     speed: 100,
-    step: function() { console.log('clicked'); singlestep = true; }
+    stepSize: 5,
+    maxSteps: 20,
+    step: function() { console.log('step'); singlestep = true; },
+    build: function() { console.log('buildGif'); /* TODO: implement */ }
 };
 
 // http://www.html5rocks.com/en/tutorials/file/dndfiles/
@@ -113,7 +116,10 @@ var setupGui = function() {
 
         gui.add(pixel8, 'speed').min(10).max(1000).step(10);
         gui.add(pixel8, 'paused');
-        gui.add(pixel8, 'step'); // this DOES fire; somehow, advance ONE frame when paused
+        gui.add(pixel8, 'step'); // advance one frame (when paused)
+        gui.add(pixel8, 'stepSize').min(1).max(50).step(1);
+        gui.add(pixel8, 'maxSteps').min(1).max(100).step(1);
+        gui.add(pixel8, 'build');
 
     }
 

@@ -4,8 +4,8 @@
 
 PImage img;
 int pixStep = 5;
-int pixSize = 5;
-int maxSteps = 12;
+// int pixSize = 5;
+// int maxSteps = 12;
 int stepCount = 1;
 int m;
 int autoDirection = 1; // direction of expansion
@@ -83,7 +83,7 @@ void drawPix()
   pixelateImage(pixSize);
 
   stepCount += autoDirection;
-  if (stepCount >= maxSteps || stepCount <= 0) {
+  if (stepCount >= pixel8.maxSteps || stepCount <= 0) {
     autoDirection = -(autoDirection);
     revCount++;
     console.log(revCount);
@@ -136,16 +136,10 @@ color getColor(int xLoc, int yLoc) {
 
 
 void setPixSize(int direction) {
-  pixSize = (pixSize + (direction * pixStep));
-  if (pixSize < pixStep) pixSize = pixStep;
+  pixSize = (pixSize + (direction * pixel8.stepSize));
+  if (pixSize < pixel8.stepSize) pixSize = pixel8.stepSize;
   if (pixSize > width) {
     autoDirection = -(autoDirection);
     console.log('reversed!');
   }
-}
-
-
-int curSq = 0;
-String sequenceNbr() {
-  return nf(curSq++, 5);
 }

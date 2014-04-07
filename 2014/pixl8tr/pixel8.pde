@@ -6,7 +6,7 @@
 // is that even possible ?!?!?!?
 
 PImage img;
-int pixSize = 5;
+int pixSize = pixel8.initialSize;
 int stepCount = 1;
 int m;
 int autoDirection = 1; // direction of expansion
@@ -30,7 +30,7 @@ void draw() {
   // crude
   if (img.pixels.length <= 10) return;
 
-  // TODO: we will loop back-n-forth UNTIL
+  // we will loop back-n-forth UNTIL
   // "build-gif" is launched
   // then we will start from ground zero and loop around.
 
@@ -47,7 +47,7 @@ void draw() {
       m = millis();
       singlestep = false;
 
-    } else if (!pixel8.paused && (millis() - m > pixel8.speed)) {
+    } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
 
       drawPix();
 
@@ -63,7 +63,8 @@ void buildGif() {
 
   // loop around....
   revCount = 0;
-  pixSize = 5; // TODO: this is the hard-coded default. would like to start it differently....
+  pixSize = pixel8.initialSize;
+
   while (revCount !== 2) {
     drawPix();
     encoder.addFrame(externals.context);
@@ -84,7 +85,8 @@ void startGif() {
   encoder.start();
 
   encoder.addFrame(externals.context);
-  encoder.setDelay(pixel8.speed);
+  encoder.setDelay(pixel8.delay);
+  console.log('speed: ' + pixel8.delay);
 
 }
 
@@ -109,15 +111,16 @@ void drawPix()
 
   setPixSize(autoDirection);
   pixelateImage(pixSize);
-
   stepCount += autoDirection;
+
+  console.log('stepCount: ' + stepCount + ' pixSize: ' + pixSize + ' revCount: ' + revCount);
+
+  // this does not nesc get us back to ZERO
   if (stepCount >= pixel8.maxSteps || stepCount <= 0) {
     autoDirection = -(autoDirection);
     revCount++;
-    console.log(revCount);
+    console.log('direction changed, revcount incremented to: ' + revCount);
   }
-
-  // encoder.addFrame(externals.context);
 
 }
 

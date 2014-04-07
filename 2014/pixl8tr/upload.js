@@ -43,7 +43,8 @@ var uri = "",
 
 var pixel8 = {
     paused: false,
-    speed: 100,
+    delay: 100,
+    initialSize: 5,
     stepSize: 5,
     maxSteps: 20,
     step: function() { console.log('step'); singlestep = true; },
@@ -93,6 +94,8 @@ function handleFileSelect(evt) {
                     placeholder.appendChild(c);
 
                     var canvas = document.querySelector('#jstest');
+                    // TODO: this sketch is not destroyed when canvas is destroyed
+                    // it continues runnign after new image is loaded...
                     Processing.loadSketchFromSources(canvas, ["pixel8.pde"]);
                 };
 
@@ -120,10 +123,13 @@ var setupGui = function() {
     if (oldg.length === 0) {
 
         var gui = new dat.GUI();
-
-        gui.add(pixel8, 'speed').min(10).max(1000).step(10);
+        // anything below 0.02 millis is rounded up to... .10 (ie, 10 => 100)
+        // WTF
+        // http://nullsleep.tumblr.com/post/16524517190/animated-gif-minimum-frame-delay-browser-compatibility
+        gui.add(pixel8, 'delay').min(20).max(1000).step(10);
         gui.add(pixel8, 'paused');
         gui.add(pixel8, 'step'); // advance one frame (when paused)
+        gui.add(pixel8, 'initialSize');
         gui.add(pixel8, 'stepSize').min(1).max(50).step(1);
         gui.add(pixel8, 'maxSteps').min(1).max(100).step(1);
         gui.add(pixel8, 'build');
@@ -132,12 +138,12 @@ var setupGui = function() {
 
 };
 
-
+// this may remove the old canvas, but the old processing code is still sticking around!!!
 var cleanUp = function() {
 
     removeOldCanvas();
 
-    // TODO: remove old gif
+    gifOut.removeAttribute('src');
 
     setupGui();
 

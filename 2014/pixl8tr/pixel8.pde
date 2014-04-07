@@ -2,10 +2,11 @@
 // http://www.jeffreythompson.org/blog/2012/02/18/pixelate-and-posterize-in-processing/
 // amongst other sources I looked at
 
+// TODO: need the ability to restart after a noLoop
+// is that even possible ?!?!?!?
+
 PImage img;
-int pixStep = 5;
-// int pixSize = 5;
-// int maxSteps = 12;
+int pixSize = 5;
 int stepCount = 1;
 int m;
 int autoDirection = 1; // direction of expansion
@@ -16,44 +17,27 @@ void setup() {
   size(iwidth, iheight);
   noStroke();
 
-  encoder.setRepeat(0);
-  encoder.setDelay(500);
-  encoder.start();
-
   img = loadImage(uri); // still has a loading time....
 
   m = millis();
 
-  console.log("started");
-
 }
-
 
 void draw() {
 
+
+  // wait until image is REALLY loaded from URI
+  // crude
   if (img.pixels.length <= 10) return;
 
-  // wait until image is REALLY loaded
-  // from URI
-  // hunh.
-  if (firstFrame) {
-    firstFrame = false;
+  // TODO: we will loop back-n-forth UNTIL
+  // "build-gif" is launched
+  // then we will start from ground zero and loop around.
 
-    console.log(img.pixels.length);
+  if (buildmode) {
 
-    image(img, 0, 0);
-
-    encoder.addFrame(externals.context);
-    encoder.setDelay(pixel8.speed);
-  }
-
-  if (revCount == 2) {
-    encoder.finish();
-    binary_gif = encoder.stream().getData();
-    gif_url = 'data:image/gif;base64,' + encode64(binary_gif);
-    gifOut.src = gif_url;
     noLoop();
-    image(img, 0, 0); // THIS output the image, though. so... pre-load issue ???
+    buildGif();
 
   } else {
 
@@ -73,6 +57,50 @@ void draw() {
 }
 
 
+void buildGif() {
+
+  startGif();
+
+  // loop around....
+  revCount = 0;
+  pixSize = 5; // TODO: this is the hard-coded default. would like to start it differently....
+  while (revCount !== 2) {
+    drawPix();
+    encoder.addFrame(externals.context);
+  }
+
+  // finish it off
+
+  endGif();
+
+}
+
+void startGif() {
+  // store original as first frame, w/ 1/2 delay
+  image(img, 0, 0);
+
+  encoder.setRepeat(0);
+  encoder.setDelay(500);
+  encoder.start();
+
+  encoder.addFrame(externals.context);
+  encoder.setDelay(pixel8.speed);
+
+}
+
+void endGif() {
+
+  encoder.finish();
+  binary_gif = encoder.stream().getData();
+  gif_url = 'data:image/gif;base64,' + encode64(binary_gif);
+  gifOut.src = gif_url;
+
+  // neither one of these is needed any more?
+  noLoop();
+
+  image(img, 0, 0); // THIS output the image, though. so... pre-load issue ???
+}
+
 
 // loop purely for manual monitoring
 // for export [for, say, a gif], do it faster
@@ -89,7 +117,7 @@ void drawPix()
     console.log(revCount);
   }
 
-  encoder.addFrame(externals.context);
+  // encoder.addFrame(externals.context);
 
 }
 

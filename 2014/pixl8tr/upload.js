@@ -38,7 +38,8 @@ var uri = "",
     encoder,
     binary_gif,
     gif_url,
-    gifOut;
+    gifOut,
+    buildmode = false;
 
 var pixel8 = {
     paused: false,
@@ -46,11 +47,14 @@ var pixel8 = {
     stepSize: 5,
     maxSteps: 20,
     step: function() { console.log('step'); singlestep = true; },
-    build: function() { console.log('buildGif'); /* TODO: implement */ }
+    // TODO: will need some user feedback on the process....
+    // since frame-count is known, a progress bar? !!!
+    build: function() { console.log('buildGif'); buildmode = true; }
 };
 
 // http://www.html5rocks.com/en/tutorials/file/dndfiles/
 function handleFileSelect(evt) {
+
     var files = evt.target.files; // FileList object
 
     // Loop through the FileList and render image files as thumbnails.
@@ -67,6 +71,9 @@ function handleFileSelect(evt) {
         reader.onload = (function(theFile) {
 
             return function(e) {
+
+                // TODO: delete previously generated gif
+
                 gifOut = document.getElementById('generated');
                 var img = document.getElementById('uploaded');
                 uri = e.target.result;
@@ -135,6 +142,7 @@ var cleanUp = function() {
     setupGui();
 
     encoder = new GIFEncoder();
+    buildmode = false;
 
 };
 

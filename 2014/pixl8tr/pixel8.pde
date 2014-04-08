@@ -100,7 +100,7 @@ void endGif() {
   // neither one of these is needed any more?
   noLoop();
 
-  image(img, 0, 0); // THIS output the image, though. so... pre-load issue ???
+  image(img, 0, 0);
 }
 
 
@@ -113,10 +113,18 @@ void drawPix()
   pixelateImage(pixSize);
   stepCount += autoDirection;
 
-  console.log('stepCount: ' + stepCount + ' pixSize: ' + pixSize + ' revCount: ' + revCount);
 
   // this does not nesc get us back to ZERO
-  if (stepCount >= pixel8.maxSteps || stepCount <= 0) {
+  var curSize = (pixel8.stepSize * pixel8.maxSteps) + pixel8.initialSize;
+
+  // console.log('stepCount: ' + stepCount + ' pixSize: ' + pixSize
+  //             + ' revCount: ' + revCount + ' curSize: ' + curSize);
+
+  if (pixSize >= curSize || pixSize <= pixel8.stepSize
+      || pixSize >= width || pixSize >= height) {
+    if (pixSize >= curSize) pixSize = curSize;
+    if (pixSize > width) pixSize = width;
+    if (pixSize > height) pixSize = height;
     autoDirection = -(autoDirection);
     revCount++;
     console.log('direction changed, revcount incremented to: ' + revCount);
@@ -169,8 +177,4 @@ color getColor(int xLoc, int yLoc) {
 void setPixSize(int direction) {
   pixSize = (pixSize + (direction * pixel8.stepSize));
   if (pixSize < pixel8.stepSize) pixSize = pixel8.stepSize;
-  if (pixSize > width) {
-    autoDirection = -(autoDirection);
-    console.log('reversed!');
-  }
 }

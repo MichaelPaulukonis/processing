@@ -93,6 +93,9 @@ function handleFileSelect(evt) {
                     var placeholder = document.querySelector('#placeholder');
                     placeholder.appendChild(c);
 
+                    var oldp = Processing.getInstanceById('jstest');
+                    if (oldp) oldp.exit();
+
                     var canvas = document.querySelector('#jstest');
                     // TODO: this sketch is not destroyed when canvas is destroyed
                     // it continues runnign after new image is loaded...

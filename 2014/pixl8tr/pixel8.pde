@@ -59,7 +59,14 @@ void draw() {
 
 void buildGif() {
 
+  int stepsDone = 0;
+  int stepsTotal = (pixel8.maxSteps * 2) + 1;
+
+  document.getElementById('progress_bar').className = 'loading';
+
   startGif();
+  stepsDone++;
+  updateProgress(stepsDone, stepsTotal);
 
   // loop around....
   revCount = 0;
@@ -68,11 +75,16 @@ void buildGif() {
   while (revCount !== 2) {
     drawPix();
     encoder.addFrame(externals.context);
+    stepsDone++;
+    updateProgress(stepsDone, stepsTotal);
   }
 
   // finish it off
 
   endGif();
+
+  progress.style.width = '100%';
+  progress.textContent = '100%';
 
 }
 

@@ -1,9 +1,26 @@
 
 /*
 
- NOTES
+Load an image
+Processing will pixellate it progressively.
+Controls on right (via dat.gui)
+When you like what you see, generate an animated GIF !
+whee.
 
- http://stackoverflow.com/questions/14528558/load-processing-js-sketch-after-window-is-fully-loaded-with-innerhtml
+TODO:
+ DONE drag-n-drop
+ better looking interface (ANY, really)
+ output single image if desired (when on-pause)
+ progress-bar (notification) on gif-build...
+
+
+built using:
+
+http://www.html5rocks.com/en/tutorials/file/dndfiles/
+
+
+maybe some of the following:
+
 
  http://processingjs.org/articles/jsQuickStart.html#writingpureprocessingcode
 
@@ -21,15 +38,7 @@
 
  http://makeitsolutions.com/labs/jic/
 
- http://www.html5rocks.com/en/tutorials/file/dndfiles/
-
  */
-
-// based on code @ http://stackoverflow.com/a/8779876/41153
-
-
-// dynamic loading of sketch - say, if we need to know the sketch SIZE, for instance...
-// http://stackoverflow.com/questions/14528558/load-processing-js-sketch-after-window-is-fully-loaded-with-innerhtml
 
 var uri = "",
     iwidth = 100,
@@ -39,7 +48,8 @@ var uri = "",
     binary_gif,
     gif_url,
     gifOut,
-    buildmode = false;
+    buildmode = false,
+    progress = document.querySelector('.percent');
 
 var pixel8 = {
     paused: false,
@@ -56,7 +66,10 @@ var pixel8 = {
 // http://www.html5rocks.com/en/tutorials/file/dndfiles/
 function handleFileSelect(evt) {
 
-    var files = evt.target.files; // FileList object
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.target.files || evt.dataTransfer.files; // FileList object
 
     // Loop through the FileList and render image files as thumbnails.
     for (var i = 0, f; f = files[i]; i++) {
@@ -93,12 +106,11 @@ function handleFileSelect(evt) {
                     var placeholder = document.querySelector('#placeholder');
                     placeholder.appendChild(c);
 
+                    // kill previous code (if any)
                     var oldp = Processing.getInstanceById('jstest');
                     if (oldp) oldp.exit();
 
                     var canvas = document.querySelector('#jstest');
-                    // TODO: this sketch is not destroyed when canvas is destroyed
-                    // it continues runnign after new image is loaded...
                     Processing.loadSketchFromSources(canvas, ["pixel8.pde"]);
                 };
 
@@ -109,6 +121,16 @@ function handleFileSelect(evt) {
         reader.readAsDataURL(f);
     }
 }
+
+function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy';
+}
+
+var dropZone = document.getElementById('drop_zone');
+dropZone.addEventListener('dragover', handleDragOver, false);
+dropZone.addEventListener('drop', handleFileSelect, false);
 
 
 var removeOldCanvas = function() {
@@ -158,3 +180,12 @@ var cleanUp = function() {
 
 // TODO: drag-n-drop uploads
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+
+var updateProgress = function(step, total) {
+    var percentLoaded = Math.round((step/total) * 100);
+    if (percentLoaded < 100) {
+        progress.style.width = percentLoaded + '%';
+        progress.textContent = percentLoaded + '%';
+    }
+};

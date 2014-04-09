@@ -42,6 +42,27 @@
     border-right: 1px solid #333; border-bottom: 1px solid #333;
     background-color: #3d3d3d;
     }
+
+  #progress_bar {
+    margin: 10px 0;
+    padding: 3px;
+    border: 1px solid #000;
+    font-size: 14px;
+    clear: both;
+    opacity: 0;
+    -moz-transition: opacity 1s linear;
+    -o-transition: opacity 1s linear;
+    -webkit-transition: opacity 1s linear;
+  }
+  #progress_bar.loading {
+    opacity: 1.0;
+  }
+  #progress_bar .percent {
+    background-color: #99ccff;
+    height: auto;
+    width: 0;
+  }
+
   </style>
   <!--[if lt IE 9]>
       <script type="text/javascript">alert("Your browser does not support the canvas tag.");</script>
@@ -57,8 +78,9 @@
   <div id="content">
 
     <form id='form' >
-      <div>
-        <input type="file" id="files" name="files[]" multiple />
+      <div id='drop_zone'>
+        <p>Drop file here, or manually select:</p>
+        <input type="file" id="files" name="files[]"/>
         <output id="list"></output>
       </div>
     </form>
@@ -70,6 +92,12 @@
       </noscript>
     </div>
   </div>
+
+  <div id="notes">
+    Built with Processing.js <a href="pixel8.pde">source</a>
+  </div>
+
+  <div id="progress_bar"><div class="percent">0%</div></div>
   <div style="display:none;" ><img id="uploaded"></img></div>
   <div><img id="generated" /></div>
 

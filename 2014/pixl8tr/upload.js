@@ -1,26 +1,32 @@
 
 /*
 
-Load an image
-Processing will pixellate it progressively.
-Controls on right (via dat.gui)
-When you like what you see, generate an animated GIF !
-whee.
+ Load an image
+ Processing will pixellate it progressively.
+ Controls on right (via dat.gui)
+ When you like what you see, generate an animated GIF !
+ whee.
 
-TODO:
+ TODO:
  DONE drag-n-drop
  better looking interface (ANY, really)
+ ** DONE output gif is centered
+ ** INPROGRESS progress-bar of conversion
+ *** depends upon webworker code
+ ** TODO: on-screen notes as to what this is/what is does
+ ** TODO: on-screen notes as to what was used
+ ** scale canvas to fit screen
  output single image if desired (when on-pause)
- progress-bar (notification) on gif-build...
+ optionally used scaled pixels (that is -- scaled to size of canvas)
+ optionally use fixed canvas size, and clip image?
+ ** TOO MUCH WORK ?
+
+ built using:
+
+ http://www.html5rocks.com/en/tutorials/file/dndfiles/
 
 
-built using:
-
-https://github.com/antimatter15/jsgif
-http://www.html5rocks.com/en/tutorials/file/dndfiles/
-
-
-maybe some of the following:
+ maybe some of the following:
 
 
  http://processingjs.org/articles/jsQuickStart.html#writingpureprocessingcode
@@ -45,7 +51,6 @@ var uri = "",
     iwidth = 100,
     iheight = 100,
     singlestep = false,
-    encoder,
     binary_gif,
     gif_url,
     gifOut,
@@ -53,76 +58,53 @@ var uri = "",
     progress = document.querySelector('.percent'),
     frames = [];
 
+
+
+var savecanvas = function() {
+    var cvs = document.getElementsByTagName('canvas');
+    if (cvs && cvs[0]) {
+        var img = cvs[0].toDataURL('image/jpg');
+        window.open(img, '_blank');
+    }
+};
+
+var log = function(msg) {
+    if (console && console.log) console.log(msg);
+};
+
 var pixel8 = {
     paused: false,
     delay: 100,
     initialSize: 5,
     stepSize: 5,
     maxSteps: 20,
-    step: function() { console.log('step'); singlestep = true; },
-    // TODO: will need some user feedback on the process....
-    // since frame-count is known, a progress bar? !!!
-    build: function() { console.log('buildGif'); buildmode = true; }
+    step: function() { log('step'); singlestep = true; },
+    build: function() { log('buildGif'); buildmode = true; },
+    saveframe: savecanvas
 };
 
-// http://www.html5rocks.com/en/tutorials/file/dndfiles/
-function handleFileSelect(evt) {
 
-    evt.stopPropagation();
-    evt.preventDefault();
+var cleanUp = function() {
 
-    var files = evt.target.files || evt.dataTransfer.files; // FileList object
 
-    // Loop through the FileList and render image files as thumbnails.
-    for (var i = 0, f; f = files[i]; i++) {
+    // kill previous code (if any)
+    var oldp = Processing.getInstanceById('jstest');
+    if (oldp) oldp.exit();
 
-        // Only process image files.
-        if (!f.type.match('image.*')) {
-            continue;
-        }
+    removeOldCanvas();
 
-        var reader = new FileReader();
+    gifOut.removeAttribute('src');
 
-        // Closure to capture the file information.
-        reader.onload = (function(theFile) {
+    setupGui();
 
-            return function(e) {
+    buildmode = false;
 
-                // TODO: delete previously generated gif
+    frames = [];
 
-                gifOut = document.getElementById('generated');
-                var img = document.getElementById('uploaded');
-                uri = e.target.result;
-                document.getElementById('uploaded').src = uri;
-                img.onload = function() {
+    document.getElementById('progress_bar').className = '';
 
-                    iwidth = img.width;
-                    iheight = img.height;
+};
 
-                    cleanUp();
-
-                    var c = document.createElement('canvas');
-                    c.setAttribute('width', iwidth);
-                    c.setAttribute('height', iheight);
-                    c.setAttribute('id', 'jstest');
-                    var placeholder = document.querySelector('#placeholder');
-                    placeholder.appendChild(c);
-
-                    // kill previous code (if any)
-                    var oldp = Processing.getInstanceById('jstest');
-                    if (oldp) oldp.exit();
-
-                    var canvas = document.querySelector('#jstest');
-                    Processing.loadSketchFromSources(canvas, ["pixel8.pde"]);
-                };
-
-            };
-        })(f);
-
-        // Read in the image file as a data URL.
-        reader.readAsDataURL(f);
-    }
-}
 
 function handleDragOver(evt) {
     evt.stopPropagation();
@@ -160,31 +142,12 @@ var setupGui = function() {
         gui.add(pixel8, 'stepSize').min(1).max(50).step(1);
         gui.add(pixel8, 'maxSteps').min(1).max(100).step(1);
         gui.add(pixel8, 'build');
+        gui.add(pixel8, 'saveframe');
 
     }
 
 };
 
-// this may remove the old canvas, but the old processing code is still sticking around!!!
-var cleanUp = function() {
-
-    removeOldCanvas();
-
-    gifOut.removeAttribute('src');
-
-    setupGui();
-
-    encoder = new GIFEncoder();
-    buildmode = false;
-
-    frames = [];
-
-    document.getElementById('progress_bar').className = '';
-
-};
-
-
-document.getElementById('files').addEventListener('change', handleFileSelect, false);
 
 
 var updateProgress = function(step, total) {
@@ -193,4 +156,149 @@ var updateProgress = function(step, total) {
         progress.style.width = percentLoaded + '%';
         progress.textContent = percentLoaded + '%';
     }
+};
+
+var scaleCanvas = function(width) {
+
+    var canvas = document.querySelector('canvas');
+
+    var pct = Math.round(600/width * 100);
+    if (pct < 100) {
+        canvas.style.width = '100%'; // shrink large; leave smaller alone
+    }
+
+};
+
+// http://www.html5rocks.com/en/tutorials/file/dndfiles/
+var handleFileSelect = function(evt) {
+
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.target.files || evt.dataTransfer.files; // FileList object
+
+    // Loop through the FileList and render image files as thumbnails.
+    for (var i = 0, f; f = files[i]; i++) {
+
+        // Only process image files.
+        if (!f.type.match('image.*')) {
+            continue;
+        }
+
+        var reader = new FileReader();
+
+        // Closure to capture the file information.
+        reader.onload = (function(theFile) {
+
+            return function(e) {
+
+                gifOut = document.getElementById('generated');
+                var img = document.getElementById('uploaded');
+                uri = e.target.result;
+                document.getElementById('uploaded').src = uri;
+                img.onload = function() {
+
+                    iwidth = img.width;
+                    iheight = img.height;
+
+                    cleanUp();
+
+                    var c = document.createElement('canvas');
+                    c.setAttribute('width', iwidth);
+                    c.setAttribute('height', iheight);
+                    c.setAttribute('id', 'jstest');
+
+
+                    // TODO: if width > 600 px
+                    // set as a percentage...
+                    // scaleCanvas(c, iwidth);
+
+                    var placeholder = document.querySelector('#placeholder');
+                    placeholder.appendChild(c);
+
+
+                    var canvas = document.querySelector('#jstest');
+                    Processing.loadSketchFromSources(canvas, ["pixel8.pde"]);
+                };
+
+            };
+        })(f);
+
+        // Read in the image file as a data URL.
+        reader.readAsDataURL(f);
+    }
+};
+
+document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+
+var buildgif = function(gifdata) {
+    // build the gif AFTER we generate the frames
+    document.getElementById('progress_bar').className = 'loading';
+
+    var stepsDone = 0;
+    var stepsTotal = (pixel8.maxSteps * 2) + 1;
+
+    // startGif(gifdata);
+    // stepsDone++;
+    // updateProgress(stepsDone, stepsTotal);
+
+    // console.log(gifdata.frames.length);
+    // for (var i = 1; i < gifdata.frames.length; i++) {
+    //     encoder.addFrame(gifdata.frames[i].data, true);
+    //     stepsDone++;
+    //     updateProgress(stepsDone, stepsTotal);
+    // }
+
+    // // finish it off
+
+    // endGif();
+
+    // progress.style.width = '100%';
+    // progress.textContent = '100%';
+
+
+    // gifdata.stepsTotal = stepsTotal;
+
+    // TODO: notify that gif-assembly is beginning
+
+    var gifworker = new Worker('gif-worker.js');
+
+    gifworker.onmessage = function(event) {
+        if (event.data.type === 'progress') {
+            // TODO: handle
+        } else if (event.data.type === 'gif') {
+            gifOut.src = event.data.datauri;
+        }
+    };
+
+
+    gifworker.postMessage(gifdata);
+
+
+};
+
+
+
+var startGif = function(gifobj) {
+    // store original as first frame, w/ 1/2 delay
+
+    encoder.setRepeat(0);
+    encoder.setDelay(500);
+    encoder.setSize(gifobj.width, gifobj.height);
+    encoder.start();
+
+    encoder.addFrame(gifobj/frames[0].data, true);
+    encoder.setDelay(pixel8.delay);
+    console.log('speed: ' + pixel8.delay);
+
+};
+
+var endGif = function() {
+
+    encoder.finish();
+    binary_gif = encoder.stream().getData();
+    gif_url = 'data:image/gif;base64,' + encode64(binary_gif);
+    gifOut.src = gif_url;
+
 };

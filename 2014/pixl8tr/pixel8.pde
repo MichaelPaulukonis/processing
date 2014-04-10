@@ -17,6 +17,8 @@ void setup() {
   size(iwidth, iheight);
   noStroke();
 
+  scaleCanvas(iwidth);
+
   img = loadImage(uri); // still has a loading time....
 
   m = millis();
@@ -59,8 +61,7 @@ void draw() {
 
 void buildGif() {
 
-  int stepsDone = 0;
-  int stepsTotal = (pixel8.maxSteps * 2) + 1;
+
 
 
   image(img, 0, 0);
@@ -74,55 +75,23 @@ void buildGif() {
     frames.push(externals.context.getImageData(0,0,width,height));
   }
 
-  // build the gif AFTER we generate the frames
-  document.getElementById('progress_bar').className = 'loading';
-
-  startGif();
-  stepsDone++;
-  updateProgress(stepsDone, stepsTotal);
-
-  console.log(frames.length);
-  for (var i = 1; i < frames.length; i++) {
-    encoder.addFrame(frames[i].data, true);
-    stepsDone++;
-    updateProgress(stepsDone, stepsTotal);
-  }
-
-  // finish it off
-
-  endGif();
-
-  progress.style.width = '100%';
-  progress.textContent = '100%';
-
-}
-
-void startGif() {
-  // store original as first frame, w/ 1/2 delay
-
-  encoder.setRepeat(0);
-  encoder.setDelay(500);
-  encoder.setSize(width, height);
-  encoder.start();
-
-  encoder.addFrame(frames[0].data, true);
-  encoder.setDelay(pixel8.delay);
-  console.log('speed: ' + pixel8.delay);
-
-}
-
-void endGif() {
-
-  encoder.finish();
-  binary_gif = encoder.stream().getData();
-  gif_url = 'data:image/gif;base64,' + encode64(binary_gif);
-  gifOut.src = gif_url;
-
-  // neither one of these is needed any more?
   noLoop();
 
+  var workerobj = {
+    'frames': frames,
+    'delay': pixel8.delay,
+    'width': width,
+    'height': height
+  };
+
+
+  buildgif(workerobj);
+
   image(img, 0, 0);
+
+
 }
+
 
 
 // loop purely for manual monitoring

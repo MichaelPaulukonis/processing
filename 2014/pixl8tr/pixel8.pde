@@ -62,19 +62,28 @@ void buildGif() {
   int stepsDone = 0;
   int stepsTotal = (pixel8.maxSteps * 2) + 1;
 
+
+  image(img, 0, 0);
+  frames.push(externals.context.getImageData(0,0,width,height));
+
+  // loop around....
+  revCount = 0;
+  pixSize = pixel8.initialSize;
+  while (revCount !== 2) {
+    drawPix();
+    frames.push(externals.context.getImageData(0,0,width,height));
+  }
+
+  // build the gif AFTER we generate the frames
   document.getElementById('progress_bar').className = 'loading';
 
   startGif();
   stepsDone++;
   updateProgress(stepsDone, stepsTotal);
 
-  // loop around....
-  revCount = 0;
-  pixSize = pixel8.initialSize;
-
-  while (revCount !== 2) {
-    drawPix();
-    encoder.addFrame(externals.context);
+  console.log(frames.length);
+  for (var i = 1; i < frames.length; i++) {
+    encoder.addFrame(frames[i].data, true);
     stepsDone++;
     updateProgress(stepsDone, stepsTotal);
   }
@@ -90,13 +99,13 @@ void buildGif() {
 
 void startGif() {
   // store original as first frame, w/ 1/2 delay
-  image(img, 0, 0);
 
   encoder.setRepeat(0);
   encoder.setDelay(500);
+  encoder.setSize(width, height);
   encoder.start();
 
-  encoder.addFrame(externals.context);
+  encoder.addFrame(frames[0].data, true);
   encoder.setDelay(pixel8.delay);
   console.log('speed: ' + pixel8.delay);
 

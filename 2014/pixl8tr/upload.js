@@ -16,6 +16,7 @@ TODO:
 
 built using:
 
+https://github.com/antimatter15/jsgif
 http://www.html5rocks.com/en/tutorials/file/dndfiles/
 
 
@@ -49,7 +50,8 @@ var uri = "",
     gif_url,
     gifOut,
     buildmode = false,
-    progress = document.querySelector('.percent');
+    progress = document.querySelector('.percent'),
+    frames = [];
 
 var pixel8 = {
     paused: false,
@@ -175,10 +177,13 @@ var cleanUp = function() {
     encoder = new GIFEncoder();
     buildmode = false;
 
+    frames = [];
+
+    document.getElementById('progress_bar').className = '';
+
 };
 
 
-// TODO: drag-n-drop uploads
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
 
 

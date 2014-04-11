@@ -24,7 +24,7 @@ onmessage = function(event) {
 
     var gifobj = event.data,
         encoder = new GIFEncoder(),
-        stepsDone = 0;
+        stepsDone = 1;
 
 
     var startGif = function(gifobj) {
@@ -44,10 +44,27 @@ onmessage = function(event) {
 
     startGif(gifobj);
 
-        for (var i = 1; i < gifobj.frames.length; i++) {
+    // we want a loop -- but are only provided with the upward pass
+    // no probs -- reverse it
+    for (var i = 1; i < gifobj.frames.length; i++) {
         encoder.addFrame(gifobj.frames[i].data, true);
         stepsDone++;
-        // updateProgress(stepsDone, stepsTotal);
+        self.postMessage({
+            type: 'progress',
+            stepsDone: stepsDone,
+            stepsTotal: gifobj.stepsTotal
+        });
+    }
+
+    // ugh. better way to come....
+    for (i = gifobj.frames.length-1; i >= 1; i--) {
+        encoder.addFrame(gifobj.frames[i].data, true);
+        stepsDone++;
+        self.postMessage({
+            type: 'progress',
+            stepsDone: stepsDone,
+            stepsTotal: gifobj.stepsTotal
+        });
     }
 
 

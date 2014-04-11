@@ -61,16 +61,17 @@ void draw() {
 
 void buildGif() {
 
-
-
-
   image(img, 0, 0);
   frames.push(externals.context.getImageData(0,0,width,height));
 
   // loop around....
   revCount = 0;
   pixSize = pixel8.initialSize;
-  while (revCount !== 2) {
+
+  // WAIT! THIS IS DUMB!
+  // only build the FIRST iteration
+  // repeat it on the back end....
+  while (revCount !== 1) {
     drawPix();
     frames.push(externals.context.getImageData(0,0,width,height));
   }
@@ -103,11 +104,10 @@ void drawPix()
   pixelateImage(pixSize);
   stepCount += autoDirection;
 
-
   // this does not nesc get us back to ZERO
   var curSize = (pixel8.stepSize * pixel8.maxSteps) + pixel8.initialSize;
 
-  // console.log('stepCount: ' + stepCount + ' pixSize: ' + pixSize
+  // log('stepCount: ' + stepCount + ' pixSize: ' + pixSize
   //             + ' revCount: ' + revCount + ' curSize: ' + curSize);
 
   if (pixSize >= curSize || pixSize <= pixel8.stepSize
@@ -117,7 +117,7 @@ void drawPix()
     if (pixSize > height) pixSize = height;
     autoDirection = -(autoDirection);
     revCount++;
-    console.log('direction changed, revcount incremented to: ' + revCount);
+    // log('direction changed, revcount incremented to: ' + revCount);
   }
 
 }

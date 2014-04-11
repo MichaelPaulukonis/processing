@@ -15,16 +15,19 @@
  *** depends upon webworker code
  ** TODO: on-screen notes as to what this is/what is does
  ** TODO: on-screen notes as to what was used
- ** scale canvas to fit screen
- output single image if desired (when on-pause)
- optionally used scaled pixels (that is -- scaled to size of canvas)
- optionally use fixed canvas size, and clip image?
- ** TOO MUCH WORK ?
+ ** DONE: scale canvas to fit screen
+ DONE output single image if desired (when on-pause)
+ CANCELLED optionally use fixed canvas size, and clip image?
+ ** TOO MUCH WORK
+ ** yech. this isn't a swiss-army knife.
+ optionally used scaled block (that is -- scaled to size of canvas)
+ ** this was in the original code I looked at
+
 
  built using:
 
  http://www.html5rocks.com/en/tutorials/file/dndfiles/
-
+ https://github.com/antimatter15/jsgif
 
  maybe some of the following:
 
@@ -106,16 +109,6 @@ var cleanUp = function() {
 };
 
 
-function handleDragOver(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-    evt.dataTransfer.dropEffect = 'copy';
-}
-
-var dropZone = document.getElementById('drop_zone');
-dropZone.addEventListener('dragover', handleDragOver, false);
-dropZone.addEventListener('drop', handleFileSelect, false);
-
 
 var removeOldCanvas = function() {
 
@@ -171,6 +164,8 @@ var scaleCanvas = function(width) {
 
 // http://www.html5rocks.com/en/tutorials/file/dndfiles/
 var handleFileSelect = function(evt) {
+
+    this.className = '';
 
     evt.stopPropagation();
     evt.preventDefault();
@@ -229,55 +224,51 @@ var handleFileSelect = function(evt) {
     }
 };
 
-document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy';
+    this.className = 'is_hover';
+}
+
+var dropZone = document.getElementById('content');
+dropZone.addEventListener('dragover', handleDragOver, false);
+dropZone.addEventListener('drop', handleFileSelect, false);
+
+dropZone.ondragend = function() {
+    this.className = '';
+    return false;
+};
 
 
 var buildgif = function(gifdata) {
     // build the gif AFTER we generate the frames
     document.getElementById('progress_bar').className = 'loading';
 
-    var stepsDone = 0;
     var stepsTotal = (pixel8.maxSteps * 2) + 1;
 
-    // startGif(gifdata);
-    // stepsDone++;
-    // updateProgress(stepsDone, stepsTotal);
-
-    // console.log(gifdata.frames.length);
-    // for (var i = 1; i < gifdata.frames.length; i++) {
-    //     encoder.addFrame(gifdata.frames[i].data, true);
-    //     stepsDone++;
-    //     updateProgress(stepsDone, stepsTotal);
-    // }
-
-    // // finish it off
-
-    // endGif();
-
-    // progress.style.width = '100%';
-    // progress.textContent = '100%';
-
-
-    // gifdata.stepsTotal = stepsTotal;
+    gifdata.stepsTotal = stepsTotal;
 
     // TODO: notify that gif-assembly is beginning
+
+    log('starting worker build');
 
     var gifworker = new Worker('gif-worker.js');
 
     gifworker.onmessage = function(event) {
         if (event.data.type === 'progress') {
-            // TODO: handle
+            updateProgress(event.data.stepsDone, event.data.stepsTotal);
         } else if (event.data.type === 'gif') {
             gifOut.src = event.data.datauri;
+            progress.style.width = '100%';
+            progress.textContent = '100%';
         }
     };
 
-
     gifworker.postMessage(gifdata);
 
-
 };
-
 
 
 var startGif = function(gifobj) {

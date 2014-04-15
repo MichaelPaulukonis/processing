@@ -3,11 +3,12 @@
 // amongst other sources I looked at
 
 PImage img;
-int pixStep = 5;
-int pixSize = 5;
-int maxSteps = 12;
+int pixStep = 1;
+int pixSize = 1;
+int maxSteps = 50;
 int stepCount = 1;
 int curSecond;
+int m;
 int autoDirection = 1; // direction of expansion
 
 /* @pjs preload="pablo.gogs.dream.jpg"; */
@@ -25,9 +26,24 @@ void setup()
   pixelateImage(pixSize);    // argument is resulting pixel size
 
     curSecond = second();
+    m = millis();
 
-  while (curSq < 25) {
-    drawPix();
+  //  while (curSq < 25) {
+  //    drawPix();
+  //  }
+}
+
+void draw()
+{
+  if (millis() - m > 100) {
+    setPixSize(autoDirection);
+    pixelateImage(pixSize);
+    stepCount += autoDirection;
+    if (stepCount >= maxSteps || stepCount <= 0) {
+      autoDirection = -(autoDirection);
+    }
+//    curSecond = second();
+    m = millis();
   }
 }
 
@@ -56,7 +72,7 @@ void pixelateImage(int pxSize) {
     }
   }
 
-  saveFrame("frame-" + sequenceNbr() + ".png");
+  // gitsaveFrame("frame-" + sequenceNbr() + ".png");
 }
 
 // average code based on http://stackoverflow.com/a/12408627/41153

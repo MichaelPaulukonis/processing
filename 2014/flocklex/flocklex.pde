@@ -13,6 +13,7 @@ Flock flock;
 String lexsource = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 LexManager lm = new LexManager();
 boolean debug = true;
+boolean trails = false;
 
 void setup() {
   size(600, 600);
@@ -20,12 +21,20 @@ void setup() {
   colorMode(HSB, 100);
   flock = new Flock();
 
+  background(20);
+  noStroke();
   bigBang();
   smooth();
 }
 
 void draw() {
-  background(20);
+  if (trails) {
+    fill(20, 20);
+    rect(0, 0, width, height);
+  } 
+  else {
+    background(20);
+  }
   flock.run();
 }
 
@@ -57,7 +66,7 @@ void mousePressed() {
 }
 
 // how lexically close do Boids have to be to flock?
-int affinityDistance = 5;
+int affinityDistance = 0;
 void setAffinityDistance(int direction) {
   affinityDistance = (affinityDistance + direction);
   if (affinityDistance < 0) affinityDistance = 0;

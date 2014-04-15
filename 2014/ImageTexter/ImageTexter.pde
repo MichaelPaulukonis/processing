@@ -16,14 +16,14 @@
 
 
 TextManager t;
-int textsize = 20;
+int textsize = 10;
 color blackfield = #000000;
 color whitefield = #FFFFFF;
 boolean blackNotWhite = false;
 PImage img;
 
 void setup() {
-  size(800, 800);
+  size(700, 700);
   colorMode(HSB, width, height, 100);
   clearScreen();
   t = new TextManager();
@@ -210,7 +210,7 @@ void autoPaintRegion(int minX, int minY, int maxX, int maxY) {
 }
 
 
-boolean randomSizeMode = false;
+boolean randomSizeMode = true;
 void toggleRandomSizeMode() {
   randomSizeMode = !randomSizeMode;
 }

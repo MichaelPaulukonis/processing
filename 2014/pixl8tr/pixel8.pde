@@ -12,6 +12,7 @@ int m;
 int autoDirection = 1; // direction of expansion
 int revCount = 0;
 boolean firstFrame = true;
+boolean buildStarted = false;
 
 void setup() {
   size(iwidth, iheight);
@@ -27,7 +28,6 @@ void setup() {
 
 void draw() {
 
-
   // wait until image is REALLY loaded from URI
   // crude
   if (img.pixels.length <= 10) return;
@@ -40,6 +40,7 @@ void draw() {
 
     noLoop();
     buildGif();
+    buildmode = false;
 
   } else {
 
@@ -64,19 +65,17 @@ void buildGif() {
   image(img, 0, 0);
   frames.push(externals.context.getImageData(0,0,width,height));
 
-  // loop around....
+  // reset
+  // we don't store frames in "test mode" since any variable may change prior to build
   revCount = 0;
   pixSize = pixel8.initialSize;
 
-  // WAIT! THIS IS DUMB!
   // only build the FIRST iteration
   // repeat it on the back end....
   while (revCount !== 1) {
     drawPix();
     frames.push(externals.context.getImageData(0,0,width,height));
   }
-
-  noLoop();
 
   var workerobj = {
     'frames': frames,
@@ -86,10 +85,9 @@ void buildGif() {
   };
 
 
-  buildgif(workerobj);
-
   image(img, 0, 0);
 
+  buildgif(workerobj);
 
 }
 

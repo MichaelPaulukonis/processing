@@ -10,11 +10,13 @@
  TODO:
  DONE drag-n-drop
  better looking interface (ANY, really)
+ ** TODO better instructions
+ ** TODO notification that frame-building is starting
  ** DONE output gif is centered
  ** INPROGRESS progress-bar of conversion
  *** depends upon webworker code
- ** TODO: on-screen notes as to what this is/what is does
- ** TODO: on-screen notes as to what was used
+ ** INPROGRESS on-screen notes as to what this is/what is does
+ ** INPROGRESS on-screen notes as to what was used
  ** DONE: scale canvas to fit screen
  DONE output single image if desired (when on-pause)
  CANCELLED optionally use fixed canvas size, and clip image?
@@ -62,6 +64,7 @@ var uri = "",
     frames = [];
 
 
+function getProcessingSketchId () { return 'jstest'; }
 
 var savecanvas = function() {
     var cvs = document.getElementsByTagName('canvas');
@@ -75,6 +78,14 @@ var log = function(msg) {
     if (console && console.log) console.log(msg);
 };
 
+var build = function() {
+    log('buildGif');
+    gifOut.removeAttribute('src');
+    getProcessingInstance(getProcessingSketchId()).loop();
+    buildmode = true;
+};
+
+
 var pixel8 = {
     paused: false,
     delay: 100,
@@ -82,16 +93,21 @@ var pixel8 = {
     stepSize: 5,
     maxSteps: 20,
     step: function() { log('step'); singlestep = true; },
-    build: function() { log('buildGif'); buildmode = true; },
+    build: build,
     saveframe: savecanvas
 };
 
+var getProcessingInstance = function(id) {
+
+    var i = Processing.getInstanceById(id);
+    return i;
+
+};
 
 var cleanUp = function() {
 
-
     // kill previous code (if any)
-    var oldp = Processing.getInstanceById('jstest');
+    var oldp = getProcessingInstance(getProcessingSketchId());
     if (oldp) oldp.exit();
 
     removeOldCanvas();
@@ -112,7 +128,7 @@ var cleanUp = function() {
 
 var removeOldCanvas = function() {
 
-    var oldc = document.getElementById('jstest');
+    var oldc = document.getElementById(getProcessingSketchId());
     if (oldc) {
         oldc.parentNode.removeChild(oldc);
     }
@@ -147,7 +163,7 @@ var updateProgress = function(step, total) {
     var percentLoaded = Math.round((step/total) * 100);
     if (percentLoaded < 100) {
         progress.style.width = percentLoaded + '%';
-        progress.textContent = percentLoaded + '%';
+        progress.textContent = '' + step + '/' + total + ' : ' + percentLoaded + '%';
     }
 };
 
@@ -201,12 +217,7 @@ var handleFileSelect = function(evt) {
                     var c = document.createElement('canvas');
                     c.setAttribute('width', iwidth);
                     c.setAttribute('height', iheight);
-                    c.setAttribute('id', 'jstest');
-
-
-                    // TODO: if width > 600 px
-                    // set as a percentage...
-                    // scaleCanvas(c, iwidth);
+                    c.setAttribute('id', getProcessingSketchId());
 
                     var placeholder = document.querySelector('#placeholder');
                     placeholder.appendChild(c);
@@ -261,6 +272,7 @@ var buildgif = function(gifdata) {
             updateProgress(event.data.stepsDone, event.data.stepsTotal);
         } else if (event.data.type === 'gif') {
             gifOut.src = event.data.datauri;
+            gifOut.parentElement.style.width = iwidth + 'px';
             progress.style.width = '100%';
             progress.textContent = '100%';
         }

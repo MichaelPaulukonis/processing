@@ -45,7 +45,7 @@ class LexManager {
   }
 
   Boolean hasText(String text) {
-    return defaultText.indexOf(text) != -1;
+    return w.indexOf(text) != -1;
   }
 }
 

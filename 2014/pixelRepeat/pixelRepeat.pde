@@ -5,12 +5,22 @@ int offset = 0;
 boolean horizontal = true;
 boolean paused = false;
 boolean singleStep = false;
+String images[] = { 
+  "picasso.gogs.jpg", "pablo.gogs.dream.jpg", "keyboard.banana.jpg"
+};
+int imgIndex = 0;
 
 void setup() {
-  //  img = loadImage("picasso.gogs.jpg");
-  //img = loadImage("pablo.gogs.dream.jpg");
-  img = loadImage("keyboard.banana.jpg");
+
+  changeImage(imgIndex);
+  
+}
+
+void changeImage(int index) {
+
+  img = loadImage(images[index]);
   size(img.width, img.height);
+  
 }
 
 void draw() {
@@ -36,6 +46,7 @@ void draw() {
 
 void verticalSlice() {
   if (offset >= width) offset = 0;
+  if (offset < 0) offset = width - 1;
 
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
@@ -47,8 +58,11 @@ void verticalSlice() {
   offset++;
 }
 
+// when moving "backwards" we can throw an error
+//  when offset = -1
 void horizontalSlice() {
   if (offset >= height) offset = 0;
+  if (offset < 0) offset = height - 1;
 
   for (int x = 0; x < width; x++) {
     for (int y = 0; y < height; y++) {
@@ -70,6 +84,12 @@ void keyPressed() {
   if (key == ' ') paused = !paused; 
 
   if (key == CODED) {
+
+    if (keyCode == UP) {
+      imgIndex = (++imgIndex % images.length);
+      changeImage(imgIndex);
+    }
+
     if (paused) {
       if (keyCode == RIGHT || keyCode == LEFT) singleStep = true; 
       if (keyCode == LEFT) {

@@ -9,13 +9,20 @@
   <body>
 
     <h1>source image (generation: <span id='generation'></span>)</h1>
+    <input type='checkbox' id='autorun' name='autorun' value='value'>auto-run</input>
     <button id='glitcher'>transform 1</button>
     <button id='glitcher2'>transform 2</button>
+    <button id='undo'>undo</button>
     <button id='reset'>reset</button>
+    <button id='showthumbs'>show thumbs</button>
 
     <div id='targets'>
+      <!-- pre-load a default image -->
       <img id='original' src='78c.jpg'></img>
       <img id='source' src='78c.jpg'></img>
+    </div>
+
+    <div id='thumbs'>
     </div>
 
     <script src='glitch.js'></script>

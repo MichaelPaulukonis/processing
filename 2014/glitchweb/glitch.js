@@ -1,156 +1,288 @@
-var generation = 0;
+var glitchweb = function() {
 
-function getBase64Image(img) {
-    // Create an empty canvas element
-    var canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
+    var generation = 0,
+        glitches = [],
+        autorun = false;
 
-    // Copy the image contents to the canvas
-    var ctx = canvas.getContext("2d");
+    function getBase64Image(img) {
+        // Create an empty canvas element
+        var canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
 
-    try {
-        ctx.drawImage(img, 0, 0);
-    } catch (ex) {
-        if (ex.name === "NS_ERROR_NOT_AVAILABLE") {
-            alert('bad image!');
-            console.log('previous operation killed the image @ generation : ' + (generation - 1));
+        // Copy the image contents to the canvas
+        var ctx = canvas.getContext("2d");
+
+        try {
+            ctx.drawImage(img, 0, 0);
+        } catch (ex) {
+            if (ex.name === "NS_ERROR_NOT_AVAILABLE") {
+                automationOff();
+                console.log('previous operation killed the image @ generation : ' + (generation - 1));
+                undo();
+            }
         }
+
+        // Get the data-URL formatted image
+        // Firefox supports PNG and JPEG. You could check img.src to
+        // guess the original format, but be aware the using "image/jpg"
+        // will re-encode the image.
+        var dataURL = canvas.toDataURL("image/jpeg");
+
+        return dataURL.replace(/^data:image\/(png|jpeg);base64,/, "");
+        // return dataURL;
+
     }
 
-    // Get the data-URL formatted image
-    // Firefox supports PNG and JPEG. You could check img.src to
-    // guess the original format, but be aware the using "image/jpg"
-    // will re-encode the image.
-    var dataURL = canvas.toDataURL("image/jpeg");
 
-    return dataURL.replace(/^data:image\/(png|jpeg);base64,/, "");
-    // return dataURL;
+    var automationOff = function() {
 
-}
+        console.log('stopping automation');
+        autorun = false;
+        var chk = document.getElementById('autorun');
+        if (chk) chk.checked = false;
+
+    };
+
+    var undo = function() {
+        console.log('undo from gen ' + generation + ' to ' + (generation - 1));
+        generation--;
+        glitches.length--;
+        if (generation < 0) generation = 0;
+        document.getElementById('source').src = glitches[generation];
+        updateGeneration(generation);
+        console.log('generation is now ' + generation);
+    };
+
+    var glitchit = function(transform) {
+
+        var img = document.getElementById('source');
+        var b64 = getBase64Image(img);
+
+        if (b64 == undefined) {
+            console.log('we had an error');
+            return;
+        }
+
+        // see http://stackoverflow.com/a/12713326/41153
+        var intary = new Uint8Array(atob(b64).split("").map(function(c) {
+            return c.charCodeAt(0); }));
+        var mod1 = transform(intary);
+
+        updateGeneration(++generation);
+
+        // see http://stackoverflow.com/a/12713326/41153
+        var out64 =  btoa(String.fromCharCode.apply(null, mod1));
+
+        var glitched = document.createElement('img');
+        glitched.src = "data:image/jpeg;base64," + out64;
+        glitched.id = 'source';
+        glitched.onerror = function() {
+            // TODO: UI feedback
+            automationOff();
+            console.log('previous glitch was un-renderable');
+            undo();
+        };
+        glitched.onload = function() {
+            if (autorun) {
+                // setTimeout(function() { glitchit(transform); }, 25);
+                glitchit(transform);
+            };
+        };
+
+        glitches[generation] = glitched.src;
+
+        var targets = document.getElementById('targets');
+        targets.removeChild(img);
+
+        targets.appendChild(glitched);
+
+    };
 
 
-var glitchit = function(transform) {
+    // Returns a random integer between min and max
+    // Using Math.round() will give you a non-uniform distribution!
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
-    var img = document.getElementById('source');
-    var b64 = getBase64Image(img);
+    var transform1 = function(intary) {
 
-    var mod1 = transform(b64);
+        for (var i = 0; i < 4; i++) {
+            var loc = getRandomInt(128, intary.length);
+            var newval = getRandomInt(0, 255);
+            intary[loc] = newval;
+        }
 
-    // console.log(mod1);
-    // console.log('the same? ' + b64 == mod1);
+        return intary;
 
-    var glitched = document.createElement('img');
-    glitched.src = "data:image/jpeg;base64," + mod1;
-    glitched.id = 'source';
-    glitched.onload = function() {
-        if (this.complete === false) {
-            console.log('HOUSTON WE HAVE A BAD IMAGE');
-        } else {
-            console.log('good image');
+    };
+
+    var transform2 = function(intary) {
+
+        var loc1 = getRandomInt(128, intary.length);
+        var loc2 = getRandomInt(128, intary.length);
+        var val1 = intary[loc1];
+        var val2 = intary[loc2];
+
+        for (var i = 128; i < intary.length; i++) {
+            if (intary[i] == val1) {
+                intary[i] = val2;
+            } else if (intary[i] == val2) {
+                intary[i] = val1;
+            }
+        }
+
+        return intary;
+
+    };
+
+    var updateGeneration = function(gen) {
+
+        document.getElementById('generation').textContent = gen;
+
+    };
+
+    var reset = function() {
+
+        var orig = document.getElementById('original');
+        var source = document.getElementById('source');
+        source.src = orig.src;
+
+        generation = 0;
+        updateGeneration(generation);
+        glitches = [];
+
+    };
+
+
+    // http://www.html5rocks.com/en/tutorials/file/dndfiles/
+    var handleFileSelect = function(evt) {
+
+        this.className = '';
+
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        // well, we're only going to use ONE fil
+        var files = evt.target.files || evt.dataTransfer.files; // FileList object
+        var f = files[0];
+
+        // Only process image files.
+        if (!f.type.match('image.*')) {
+            console.log(f.type + ' is not an image file');
+            return;
+        }
+
+        var reader = new FileReader();
+
+        // Closure to capture the file information.
+        reader.onload = (function(theFile) {
+
+            return function(e) {
+
+                var org = document.getElementById('original');
+                var source = document.getElementById('source');
+                var uri = e.target.result;
+                org.src = uri;
+                source.src = uri;
+
+                org.onload = function(org) {
+                    // hrm. do anything?
+                    storeOrig(org);
+                };
+
+            };
+        })(f);
+
+        // Read in the image file as a data URL.
+        reader.readAsDataURL(f);
+
+    };
+
+
+    var  handleDragOver = function(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'copy';
+        this.className = 'is_hover';
+    };
+
+    var activateGlitchButtons = function() {
+
+        activate('glitcher', function() { glitchit(transform1); });
+        activate('glitcher2', function() { glitchit(transform2); });
+
+    };
+
+    var activate = function(selector, fn) {
+
+        var btn = document.getElementById(selector);
+        if (btn) {
+            btn.disabled = false;
+            btn.onclick = fn;
+        }
+
+    };
+
+    var storeOrig = function(img) {
+
+        var b64 = getBase64Image(img);
+        glitches[generation] = "data:image/jpeg;base64," + b64;
+
+    };
+
+    var showThumbs = function() {
+        // TODO: clear out
+        var thumbs = document.getElementById('thumbs');
+        for (var i = 0; i < glitches.length; i ++) {
+            var img = document.createElement('img');
+            img.src = glitches[i];
+            img.className = 'thumb';
+            img.id = 'glitch' + i;
+            thumbs.appendChild(img);
         }
     };
 
-    var targets = document.getElementById('targets');
-    targets.removeChild(img);
+    var init = function() {
 
-    targets.appendChild(glitched);
+        var img = document.getElementById('original');
+        img.onload = function() {
 
-};
+            storeOrig(img);
 
-// Returns a random integer between min and max
-// Using Math.round() will give you a non-uniform distribution!
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+            activate('reset', reset);
+            activate('glitcher', function() { glitchit(transform1); });
+            activate('glitcher2', function() { glitchit(transform2); });
+            activate('undo', undo);
+            activate('showthumbs', showThumbs);
 
-var transform1 = function(b64) {
+            var chk = document.getElementById('autorun');
+            if (chk) {
+                chk.onchange = function() {
+                    console.log('changed!');
+                    if (this.checked) {
+                        autorun = true;
+                    } else {
+                        autorun = false;
+                    }
+                };
+            };
 
-    var out64 = b64;
+            updateGeneration(generation);
 
-    // see http://stackoverflow.com/a/12713326/41153
-    var uintArray = new Uint8Array(atob(b64).split("").map(function(c) {
-        return c.charCodeAt(0); }));
+            var dropZone = document.getElementById('targets');
+            dropZone.addEventListener('dragover', handleDragOver, false);
+            dropZone.addEventListener('drop', handleFileSelect, false);
 
-    for (var i = 0; i < 4; i++) {
-        var loc = getRandomInt(128, uintArray.length);
-        var newval = getRandomInt(0, 255);
-        // console.log('loc: ' + loc + ' oldval: ' + uintArray[loc] + ' newVal: ' + newval);
-        uintArray[loc] = newval;
-    }
+            dropZone.ondragend = function() {
+                this.className = '';
+                return false;
+            };
 
-    updateGeneration(++generation);
+        };
 
-    // see http://stackoverflow.com/a/12713326/41153
-    return btoa(String.fromCharCode.apply(null, uintArray));
-
-
-};
-
-var transform2 = function(b64) {
-
-    var out64 = b64;
-
-    // see http://stackoverflow.com/a/12713326/41153
-    var uintArray = new Uint8Array(atob(b64).split("").map(function(c) {
-        return c.charCodeAt(0); }));
-
-    var loc1 = getRandomInt(128, uintArray.length);
-    var loc2 = getRandomInt(128, uintArray.length);
-    var val1 = uintArray[loc1];
-    var val2 = uintArray[loc2];
-
-    for (var i = 128; i < out64.length; i++) {
-        if (uintArray[i] == val1) {
-            uintArray[i] = val2;
-        } else if (uintArray[i] == val2) {
-            uintArray[i] = val1;
-        }
-    }
-
-    updateGeneration(++generation);
-
-    // see http://stackoverflow.com/a/12713326/41153
-    return btoa(String.fromCharCode.apply(null, uintArray));
-
-
-};
-
-var updateGeneration = function(gen) {
-
-    document.getElementById('generation').textContent = gen;
-
-};
-
-var reset = function() {
-
-    var orig = document.getElementById('original');
-    var source = document.getElementById('source');
-    source.src = orig.src;
-
-    generation = 0;
-    updateGeneration(generation);
-
-};
-
-var init = function() {
-
-    var btn = document.getElementById('glitcher');
-    if (btn) {
-        btn.onclick = function() { glitchit(transform1); };
-    }
-
-    var btn2 = document.getElementById('glitcher2');
-    if (btn2) {
-        btn2.onclick = function() { glitchit(transform2); };
-    }
-
-    var btn3 = document.getElementById('reset');
-    if (btn3) {
-        btn3.onclick = reset;
-    }
-
-    updateGeneration(generation);
+    }();
 
 
 }();

@@ -1,3 +1,17 @@
 #original {
     display: none;
 }
+
+#targets {
+    width: 100%;
+    height: 100%;
+}
+
+.thumb {
+    width: 100px;
+    margin: 10px;
+}
+
+.is_hover {
+    border: 1px dashed #CCC;
+}

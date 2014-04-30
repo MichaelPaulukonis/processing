@@ -3,7 +3,8 @@
 
   <head>
     <title>glitch web</title>
-    <link href='glitcher.css' rel='stylesheet'></link>
+    <link href='css/gallery.css' rel='stylesheet'></link>
+    <link href='css/glitcher.css' rel='stylesheet'></link>
   </head>
 
   <body>
@@ -23,19 +24,30 @@
            (performance score, unknown title) Jackson Mac Low, 1961
            type-written text on paper, published in Young, La Monte, An Anthology of Chance Operations, 1963
       -->
-      <img id='original' src='78c.jpg'></img>
-      <img id='source' src='78c.jpg'></img>
+      <img id='original' src='img/78c.jpg'></img>
+      <img id='source' src='img/78c.jpg'></img>
     </div>
 
     <div id='thumbs'>
     </div>
 
-    <!-- TODO: import jquery and jgrowl -->
-    <!-- TODO: look at mothereffinganimatedgif for org advice.
-         backbone, hunh?
-         that would help with my various view-states that are a mess...
+    <!-- TODO:
+         import jquery and jgrowl (notifications on errors that require roll-back, if nothing else)
+         look at mothereffinganimatedgif for org advice.
+         - backbone, hunh? that would help with my various view-states that are a mess...
+         add ability to delete thumbs
+         optionally clear thumbs on reset
+         use arbitrary step as source
+         add ability to create animated gif
+         - gilding the lily?
+         - otoh, hard to export all of these files one-by-one for external use....
+         add ability to view thumb full-size
+         add file-picker button
     -->
-    <script src='glitch.js'></script>
+    <script src='js/jquery.js'></script>
+    <script src='js/jquery.simplemodal.js'></script>
+    <script src='js/gallery.js'></script>
+    <script src='js/glitch.js'></script>
 
   </body>
 

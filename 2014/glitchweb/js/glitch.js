@@ -2,7 +2,8 @@ var glitchweb = function() {
 
     var generation = 0,
         glitches = [],
-        autorun = false;
+        autorun = false,
+        gallery = {};
 
     function getBase64Image(img) {
         // Create an empty canvas element
@@ -30,7 +31,6 @@ var glitchweb = function() {
         var dataURL = canvas.toDataURL("image/jpeg");
 
         return dataURL.replace(/^data:image\/(png|jpeg);base64,/, "");
-        // return dataURL;
 
     }
 
@@ -233,15 +233,19 @@ var glitchweb = function() {
     };
 
     var showThumbs = function() {
-        // TODO: clear out
-        var thumbs = document.getElementById('thumbs');
+
+        var ts = $('#thumbs');
+        ts.empty(); // clear out any previous thumbs
+        // so, since we're now using jquery....
         for (var i = 0; i < glitches.length; i ++) {
             var img = document.createElement('img');
             img.src = glitches[i];
             img.className = 'thumb';
             img.id = 'glitch' + i;
-            thumbs.appendChild(img);
+            ts.append(img);
         }
+        // uh-oh.... here be dragons...
+        G.init();
     };
 
     var init = function() {
@@ -282,7 +286,14 @@ var glitchweb = function() {
 
         };
 
-    }();
+    };
+
+    return {
+        init: init,
+        gallery: gallery
+    };
 
 
 }();
+
+glitchweb.init();

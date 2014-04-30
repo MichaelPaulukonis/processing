@@ -8,7 +8,8 @@
  *   http://www.opensource.org/licenses/mit-license.php
  */
 
-// TODO: can't be externally called when thumbs appear....
+
+// http://www.ericmmartin.com/projects/simplemodal-demos/
 
 // jQuery(function ($) {
 var G = {
@@ -29,11 +30,13 @@ var G = {
 		position: ['10%', null],
 		onOpen: G.open,
 		onClose: G.close
+                // onShow -- add in actions from glitch.js ???
 	    });
 
 	    return false;
 	});
     },
+
     /*
      * Creates the HTML for the viewer
      */
@@ -54,6 +57,7 @@ var G = {
 		 <div id='gallery-info'><span id='gallery-title'></span><span id='gallery-pages'></span></div> \
 		 <div id='gallery-close'><a href='#' class='simplemodal-close'>X</a></div> \
 		 </div> \
+                 <div id='gallery-actions'><a href='#' id='setsource'>set source</a></div> \
 		 </div> \
 		 </div>");
     },
@@ -73,11 +77,11 @@ var G = {
 	G.title = $('#gallery-title', G.container);
 	G.pages = $('#gallery-pages', G.container);
 
-	d.overlay.slideDown(300, function () {
+	d.overlay.slideDown('fast', function () {
 	    d.container
 		.css({height:0})
 		.show(function () {
-		    d.data.slideDown(300, function () {
+		    d.data.slideDown('fast', function () {
 			// load the first image
 			G.display();
 		    });
@@ -113,7 +117,7 @@ var G = {
     /* display the requested image and animate the height/width of the container */
     display: function () {
 	G.controls.hide();
-	G.meta.slideUp(300, function () {
+	G.meta.slideUp('fast', function () {
 	    G.meta_container.hide();
 	    G.image_container.fadeOut('fast', function () {
 		$('#gallery-image', G.container).remove();
@@ -122,20 +126,16 @@ var G = {
 		img.onload = function () {
 		    G.load(img);
 		};
-                // TODO: it's assuming we have links wrapped in images...
-		// img.src = G.images.eq(G.current_idx).find('img').attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
 		img.src = G.images.eq(G.current_idx).attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
 
 		if (G.current_idx !== 0) {
 		    // pre-load prev img
 		    var p = new Image();
-		    // p.src = G.images.eq(G.current_idx - 1).find('img').attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
 		    p.src = G.images.eq(G.current_idx - 1).attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
 		}
 		if (G.current_idx !== (G.images.length - 1)) {
 		    // pre-load next img
 		    var n = new Image();
-		    // n.src = G.images.eq(G.current_idx + 1).find('img').attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
 		    n.src = G.images.eq(G.current_idx + 1).attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
 		}
 	    });
@@ -150,11 +150,11 @@ var G = {
 	if (G.gallery.height() !== h || G.gallery.width() !== w) {
 	    G.gallery.animate(
 		{height: h},
-		300,
+		'fast',
 		function () {
 		    G.gallery.animate(
 			{width: w},
-			300,
+			'fast',
 			function () {
 			    G.show(i);
 			}
@@ -171,7 +171,7 @@ var G = {
      */
     show: function (img) {
 	img.show();
-	G.image_container.prepend(img).fadeIn('slow', function () {
+	G.image_container.prepend(img).fadeIn('fast', function () {
 	    G.showControls();
 	    G.showMeta();
 	});
@@ -224,6 +224,7 @@ var G = {
     /*
      * Show the image meta; title, image x of x and the close X
      * we might put some actions in here, as well...
+     * but they will be actions from _glitchweb_ so, reference issues?
      */
     showMeta: function () {
 	var link = G.images.eq(G.current_idx).clone(),
@@ -235,6 +236,9 @@ var G = {
 	G.meta.slideDown(function () {
 	    G.active = false;
 	});
+        $('#setsource').bind('click', {uri: G.images[G.current_idx].src}, function(event) {
+            glitchweb.storeInSource(event.data.uri);
+        });
     },
     /*
      * Unbind gallery control events

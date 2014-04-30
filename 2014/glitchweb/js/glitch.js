@@ -3,7 +3,8 @@ var glitchweb = function() {
     var generation = 0,
         glitches = [],
         autorun = false,
-        gallery = {};
+        running = false,
+        gallery = G;
 
     function getBase64Image(img) {
         // Create an empty canvas element
@@ -34,13 +35,16 @@ var glitchweb = function() {
 
     }
 
-
+    // hrm. this way we AREN'T stopping automatng. which is fine
+    // we auto-recover from a bad glitch, and continue.
+    // I think I prefer this method....
+    // leaving code in, in case "stop on bad" becomes an option... for now....
     var automationOff = function() {
 
         console.log('stopping automation');
-        autorun = false;
-        var chk = document.getElementById('autorun');
-        if (chk) chk.checked = false;
+        // autorun = false;
+        // var chk = document.getElementById('autorun');
+        // if (chk) chk.checked = false;
 
     };
 
@@ -85,7 +89,6 @@ var glitchweb = function() {
         };
         glitched.onload = function() {
             if (autorun) {
-                // setTimeout(function() { glitchit(transform); }, 25);
                 glitchit(transform);
             };
         };
@@ -149,12 +152,20 @@ var glitchweb = function() {
         var source = document.getElementById('source');
         source.src = orig.src;
 
+        clearThumbs();
+
         generation = 0;
         updateGeneration(generation);
         glitches = [];
 
     };
 
+    var storeInSource = function(uri) {
+
+        var source = $('#source')[0];
+        source.src = uri;
+
+    };
 
     // http://www.html5rocks.com/en/tutorials/file/dndfiles/
     var handleFileSelect = function(evt) {
@@ -187,7 +198,7 @@ var glitchweb = function() {
                 org.src = uri;
                 source.src = uri;
 
-                org.onload = function(org) {
+                org.onload = function(src) {
                     // hrm. do anything?
                     storeOrig(org);
                 };
@@ -232,10 +243,16 @@ var glitchweb = function() {
 
     };
 
-    var showThumbs = function() {
-
+    var clearThumbs = function() {
         var ts = $('#thumbs');
         ts.empty(); // clear out any previous thumbs
+        return ts; // side-effect
+    };
+
+    var showThumbs = function() {
+
+        var ts = clearThumbs();
+
         // so, since we're now using jquery....
         for (var i = 0; i < glitches.length; i ++) {
             var img = document.createElement('img');
@@ -245,10 +262,14 @@ var glitchweb = function() {
             ts.append(img);
         }
         // uh-oh.... here be dragons...
-        G.init();
+        gallery.init();
     };
 
     var init = function() {
+
+        $('#source').bind('load', function() {
+            $('#targets').width($(this).width());
+        });
 
         var img = document.getElementById('original');
         img.onload = function() {
@@ -290,7 +311,8 @@ var glitchweb = function() {
 
     return {
         init: init,
-        gallery: gallery
+        gallery: gallery,
+        storeInSource: storeInSource
     };
 
 

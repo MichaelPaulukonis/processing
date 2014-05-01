@@ -9,7 +9,12 @@
 }
 
 #thumbs {
-    margin-top: 10px;
+    display: block;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    padding: 10px 0 0 10px;
+    min-height: 130px;
 }
 
 .thumb {

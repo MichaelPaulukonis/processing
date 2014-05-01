@@ -57,7 +57,10 @@ var G = {
 		 <div id='gallery-info'><span id='gallery-title'></span><span id='gallery-pages'></span></div> \
 		 <div id='gallery-close'><a href='#' class='simplemodal-close'>X</a></div> \
 		 </div> \
-                 <div id='gallery-actions'><a href='#' id='setsource'>set source</a></div> \
+                 <div id='gallery-actions'> \
+                 <a href='#' id='setsource'>set source</a> \
+                 <a href='#' id='delete'>delete</a>\
+                 </div> <!-- end gallery-actions --> \
 		 </div> \
 		 </div>");
     },
@@ -69,7 +72,7 @@ var G = {
 	G.container = d.container[0];
 	G.gallery = $('#gallery', G.container);
 	G.image_container = $('#gallery-image-container', G.container);
-	G.controls = $('#gallery-controls', G.container);
+	G.controls = $('#gallery-ontrols', G.container);
 	G.next = $('#gallery-next-link', G.container);
 	G.previous = $('#gallery-previous-link', G.container);
 	G.meta_container = $('#gallery-meta-container', G.container);
@@ -238,6 +241,24 @@ var G = {
 	});
         $('#setsource').bind('click', {uri: G.images[G.current_idx].src}, function(event) {
             glitchweb.storeInSource(event.data.uri);
+        });
+        $('#delete').bind('click', {idx: G.current_idx}, function(event) {
+            var idx = event.data.idx;
+            glitchweb.deleteImage(idx);
+            // that means we have to go to next or previous as well....
+            // if next exists, go there
+            // if next does not exist, go to previous
+            // if previous does not exist, close
+            // rebuild the thumb list
+            if( idx !== (G.images.length - 1)) {
+                G.active = true;
+		G.next.trigger('click.gallery');
+            } else if ( idx !== 0) {
+                G.active = true;
+		G.previous.trigger('click.gallery');
+            } else {
+                G.close();
+            }
         });
     },
     /*

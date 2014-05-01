@@ -309,10 +309,19 @@ var glitchweb = function() {
 
     };
 
+    var deleteImage = function(idx) {
+        glitches.splice(idx, 1);
+        generation--;
+        updateGeneration(generation);
+        $('#glitch' + idx).remove();
+        // TODO: remove from thumb-list
+    };
+
     return {
         init: init,
         gallery: gallery,
-        storeInSource: storeInSource
+        storeInSource: storeInSource,
+        deleteImage: deleteImage
     };
 
 

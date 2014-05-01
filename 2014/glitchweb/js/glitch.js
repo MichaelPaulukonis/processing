@@ -19,7 +19,8 @@ var glitchweb = function() {
             ctx.drawImage(img, 0, 0);
         } catch (ex) {
             if (ex.name === "NS_ERROR_NOT_AVAILABLE") {
-                automationOff();
+                // TODO: this should be conditional
+                // plus, fails in IE - wrap the console1
                 console.log('previous operation killed the image @ generation : ' + (generation - 1));
                 undo();
             }
@@ -35,18 +36,6 @@ var glitchweb = function() {
 
     }
 
-    // hrm. this way we AREN'T stopping automatng. which is fine
-    // we auto-recover from a bad glitch, and continue.
-    // I think I prefer this method....
-    // leaving code in, in case "stop on bad" becomes an option... for now....
-    var automationOff = function() {
-
-        console.log('stopping automation');
-        // autorun = false;
-        // var chk = document.getElementById('autorun');
-        // if (chk) chk.checked = false;
-
-    };
 
     var undo = function() {
         console.log('undo from gen ' + generation + ' to ' + (generation - 1));
@@ -82,12 +71,13 @@ var glitchweb = function() {
         glitched.src = "data:image/jpeg;base64," + out64;
         glitched.id = 'source';
         glitched.onerror = function() {
-            // TODO: UI feedback
-            automationOff();
+            // TODO: this should be conditional
+            // plus, fails in IE - wrap the console1
             console.log('previous glitch was un-renderable');
             undo();
         };
         glitched.onload = function() {
+            addThumb(glitched.src, generation);
             if (autorun) {
                 glitchit(transform);
             };
@@ -170,7 +160,7 @@ var glitchweb = function() {
     // http://www.html5rocks.com/en/tutorials/file/dndfiles/
     var handleFileSelect = function(evt) {
 
-        this.className = '';
+        this.className = ''; // clear the class set in dragOver
 
         evt.stopPropagation();
         evt.preventDefault();
@@ -243,26 +233,49 @@ var glitchweb = function() {
 
     };
 
+    var getThumbArea = function() {
+        return $('#thumbs');
+    };
+
+    // not completely happy w/ returning ts as a side-effect
+    // but we don't "waste" resources
+    // "premature optimization is the root of all evil"
     var clearThumbs = function() {
-        var ts = $('#thumbs');
+        var ts = getThumbArea();
         ts.empty(); // clear out any previous thumbs
         return ts; // side-effect
     };
 
+    var addThumb = function(uri, idx) {
+
+        var img = document.createElement('img');
+        img.src = uri;
+        img.className = 'thumb';
+        img.id = 'glitch' + idx;
+        getThumbArea().append(img);
+        gallery.add($('#'+img.id)[0]);
+
+    };
+
+    // hey, why don't we automatically throw out the thumbs as we generate?
+    // also, note: these aren't really thumbs.
+    // they're full-size images shrunk-down
     var showThumbs = function() {
 
-        var ts = clearThumbs();
+        var ts = getThumbArea();
+        ts.empty();
 
-        // so, since we're now using jquery....
+        gallery.init();
+
         for (var i = 0; i < glitches.length; i ++) {
-            var img = document.createElement('img');
-            img.src = glitches[i];
-            img.className = 'thumb';
-            img.id = 'glitch' + i;
-            ts.append(img);
+            addThumb(glitches[i], i);
         }
         // uh-oh.... here be dragons...
-        gallery.init();
+        // gallery doesn't auto-add images
+        // it just grabs things when initialized
+        // so adding as generated causes an issue
+        // ANOTHER gallery plugin might be different ???
+        // gallery.init();
     };
 
     var init = function() {
@@ -274,6 +287,8 @@ var glitchweb = function() {
         var img = document.getElementById('original');
         img.onload = function() {
 
+            gallery.init();
+            addThumb(img.src, generation);
             storeOrig(img);
 
             activate('reset', reset);
@@ -314,7 +329,6 @@ var glitchweb = function() {
         generation--;
         updateGeneration(generation);
         $('#glitch' + idx).remove();
-        // TODO: remove from thumb-list
     };
 
     return {

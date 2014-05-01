@@ -216,16 +216,6 @@ var glitchweb = function() {
 
     };
 
-    var activate = function(selector, fn) {
-
-        var btn = document.getElementById(selector);
-        if (btn) {
-            btn.disabled = false;
-            btn.onclick = fn;
-        }
-
-    };
-
     var storeOrig = function(img) {
 
         var b64 = getBase64Image(img);
@@ -246,18 +236,48 @@ var glitchweb = function() {
         return ts; // side-effect
     };
 
+    var deleter = function() {
+
+        // alert('hey! delete me?');
+        // TODO: confirm deletion
+        // TODO: get all thumbs that are checked
+        // TODO: delete them.
+        if(confirm('Delete all checked images?')) {
+            $('input[type=checkbox]:checked').parent().each(function() {
+                // problem -- what index are we in glitches[]
+                var idx = parseInt($(this).find('img').attr('id').replace('glitch', ''), 10);
+                glitches.splice(idx,1);
+                // TODO: parse out index
+                this.remove();
+                // TODO: remove checked items from the glitches array!
+
+            });
+            generation = $('.thumb').length;
+            updateGeneration(generation);
+        }
+    };
+
     var addThumb = function(uri, idx) {
 
+
+        $div = $('<div></div>', {'class': 'container'});
         var img = document.createElement('img');
         img.src = uri;
         img.className = 'thumb';
         img.id = 'glitch' + idx;
-        getThumbArea().append(img);
-        gallery.add($('#'+img.id)[0]);
+
+        $chk = $('<input />', {type: 'checkbox', id: 'chk' + idx, value: img.id, 'class': 'checkbox'});
+
+        $div.append(img);
+        $div.append($chk);
+
+        getThumbArea().append($div);
+
+        $img = $('#'+img.id);
+        gallery.add($img[0]);
 
     };
 
-    // hey, why don't we automatically throw out the thumbs as we generate?
     // also, note: these aren't really thumbs.
     // they're full-size images shrunk-down
     var showThumbs = function() {
@@ -270,12 +290,18 @@ var glitchweb = function() {
         for (var i = 0; i < glitches.length; i ++) {
             addThumb(glitches[i], i);
         }
-        // uh-oh.... here be dragons...
-        // gallery doesn't auto-add images
-        // it just grabs things when initialized
-        // so adding as generated causes an issue
-        // ANOTHER gallery plugin might be different ???
-        // gallery.init();
+
+    };
+
+
+    var activate = function(selector, fn) {
+
+        var btn = document.getElementById(selector);
+        if (btn) {
+            btn.disabled = false;
+            btn.onclick = fn;
+        }
+
     };
 
     var init = function() {
@@ -296,6 +322,7 @@ var glitchweb = function() {
             activate('glitcher2', function() { glitchit(transform2); });
             activate('undo', undo);
             activate('showthumbs', showThumbs);
+            activate('deletechecked', deleter);
 
             var chk = document.getElementById('autorun');
             if (chk) {
@@ -324,11 +351,14 @@ var glitchweb = function() {
 
     };
 
+    // TODO: rework this whole idea, including when to init the gallery.
+    // in new concept ONLY init when double-click on image
+    // this means deleted images are never added.
     var deleteImage = function(idx) {
         glitches.splice(idx, 1);
         generation--;
         updateGeneration(generation);
-        $('#glitch' + idx).remove();
+        $('#glitch' + idx).parent().remove(); // hey, this isn't enough now, is it....
     };
 
     return {

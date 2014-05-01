@@ -19,9 +19,12 @@
 
 .thumb {
     width: 100px;
-    margin: 10px;
+    /* margin: 10px; */
 }
 
 .is_hover {
     border: 1px dashed #CCC;
 }
+
+.container { position: relative; width: 100px; height: 100px; float: left; margin-left: 10px; margin-bottom: 10px; }
+.checkbox { position: absolute; bottom: 0px; right: 0px; }

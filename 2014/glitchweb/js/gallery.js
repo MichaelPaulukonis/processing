@@ -212,8 +212,20 @@ var G = {
             return false;
         });
         $(document).bind('keydown.gallery', function (e) {
+            // down-arrow: 40
+            // up-arrow: 38
+
             if (!G.active) {
-                if ((e.keyCode === 37 || e.keyCode === 80) && G.current_idx !== 0) {
+
+                if (e.keyCode === 40 && G.current_idx >= 9) {
+                    // back by 10
+                    G.current_idx -= 9;
+                    G.previous.trigger('click.gallery');
+                } else if (e.keyCode === 38 && G.current_idx <= (G.images.length - 10)) {
+                    // forward by 10
+                    G.current_idx += 9;
+                    G.next.trigger('click.gallery');
+                } else if ((e.keyCode === 37 || e.keyCode === 80) && G.current_idx !== 0) {
                     G.active = true;
                     G.previous.trigger('click.gallery');
                 }

@@ -2,6 +2,7 @@ var glitchweb = function() {
 
     var generation = 0,
         glitches = [],
+        glitches2 = [],
         autorun = false,
         running = false,
         gallery = G;
@@ -32,7 +33,11 @@ var glitchweb = function() {
         // will re-encode the image.
         var dataURL = canvas.toDataURL("image/jpeg");
 
-        return dataURL.replace(/^data:image\/(png|jpeg);base64,/, "");
+        var data = { uri: dataURL.replace(/^data:image\/(png|jpeg);base64,/, ""),
+                     frame: ctx.getImageData(0,0, canvas.width, canvas.height)
+                   };
+
+        return data;
 
     }
 
@@ -50,7 +55,8 @@ var glitchweb = function() {
     var glitchit = function(transform) {
 
         var img = document.getElementById('source');
-        var b64 = getBase64Image(img);
+        var data = getBase64Image(img);
+        var b64 = data.uri;
 
         if (b64 == undefined) {
             console.log('we had an error');
@@ -359,6 +365,62 @@ var glitchweb = function() {
         generation--;
         updateGeneration(generation);
         $('#glitch' + idx).parent().remove();
+    };
+
+    var builder = function() {
+
+        // frames[] is populated as frames.push(externals.context.getImageData(0,0,width,height));
+        // we are going to have to keep this either _in parallel_ (ugh) with glitches[]
+        // or create a new array that stores an object containing
+        // { uri: "", frame: "" }
+        // or summat
+        var frames = [];
+
+        // frame = { width: 0,
+        //           height: 0,
+        //           data: Uint8ClampedArray[10]
+        //           };
+
+        var delay = 100;
+        var width = 100; // hrm. we can change this during the glitching process....
+        var height = 100;
+
+        var workerobj = {
+            'frames': frames,
+            'delay': delay,
+            'width': width,
+            'height': height
+        };
+
+        buildgif(workerobj);
+
+    };
+
+    // taken whole-hog from pixl8r
+    var buildgif = function(gifdata) {
+
+        document.getElementById('progress_bar').className = 'loading';
+
+        // TODO: notify that gif-assembly is beginning
+
+        console.log('starting worker build');
+
+        // TODO: needs to be rebuilt, as its a back-n-forth generator
+        var gifworker = new Worker('gif-worker.js');
+
+        gifworker.onmessage = function(event) {
+            if (event.data.type === 'progress') {
+                // updateProgress(event.data.stepsDone, event.data.stepsTotal);
+            } else if (event.data.type === 'gif') {
+                // gifOut.src = event.data.datauri;
+                // gifOut.parentElement.style.width = iwidth + 'px';
+                // progress.style.width = '100%';
+                // progress.textContent = '100%';
+            }
+        };
+
+        gifworker.postMessage(gifdata);
+
     };
 
     return {

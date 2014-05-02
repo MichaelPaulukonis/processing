@@ -19,7 +19,7 @@
 
 .thumb {
     width: 100px;
-    /* margin: 10px; */
+    max-height: 100px;
 }
 
 .is_hover {

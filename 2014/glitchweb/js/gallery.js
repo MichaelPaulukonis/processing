@@ -74,6 +74,7 @@ var G = {
                  </div> \
                  <div id='gallery-meta-container'> \
                  <div id='gallery-meta'> \
+                 <!-- todo make a hover over the thumb-image to indicate we can save it --> \
                  <div id='gallery-info'><span id='gallery-title'></span><span id='gallery-pages'></span></div> \
                  <div id='gallery-close'><a href='#' class='simplemodal-close'>X</a></div> \
                  </div> \
@@ -217,13 +218,15 @@ var G = {
 
             if (!G.active) {
 
-                if (e.keyCode === 40 && G.current_idx >= 9) {
+                if (e.keyCode === 40) {
                     // back by 10
                     G.current_idx -= 9;
+                    if (G.current_idx <= 0) G.current_idx = 1;
                     G.previous.trigger('click.gallery');
-                } else if (e.keyCode === 38 && G.current_idx <= (G.images.length - 10)) {
+                } else if (e.keyCode === 38) {
                     // forward by 10
                     G.current_idx += 9;
+                    if (G.current_idx >= (G.images.length - 1)) G.current_idx = G.images.length - 2;
                     G.next.trigger('click.gallery');
                 } else if ((e.keyCode === 37 || e.keyCode === 80) && G.current_idx !== 0) {
                     G.active = true;

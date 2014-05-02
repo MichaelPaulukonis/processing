@@ -17,11 +17,10 @@ var G = {
     /*
      * Calls SimpleModal with appropriate options
      */
-    init: function () {
+    init: function (img) {
         G.images = $('.thumb');
-        // can we do an add-thumb ?
-        G.images.click(function () {
-            G.current_idx = G.images.index(this);
+        // G.images.click(function () {
+            G.current_idx = G.images.index(img);
             $(G.create()).modal({
                 closeHTML: '',
                 overlayId: 'gallery-overlay',
@@ -33,11 +32,11 @@ var G = {
                 onClose: G.close
             });
 
-            return false;
-        });
+             return false;
+        // });
     },
 
-    // using this the next/prev buttons don't appear....
+    // so. not using this anymore.
     add: function(img) {
         G.images.push(img);
         var idx = G.images.length-1;
@@ -150,18 +149,10 @@ var G = {
                 img.onload = function () {
                     G.load(img);
                 };
-                img.src = G.images.eq(G.current_idx).attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
 
-                if (G.current_idx !== 0) {
-                    // pre-load prev img
-                    var p = new Image();
-                    p.src = G.images.eq(G.current_idx - 1).attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
-                }
-                if (G.current_idx !== (G.images.length - 1)) {
-                    // pre-load next img
-                    var n = new Image();
-                    n.src = G.images.eq(G.current_idx + 1).attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
-                }
+                var $origImg = G.images.eq(G.current_idx);
+                img.src = $origImg.attr('src').replace(/_(s|t|m)\.jpg$/, '.jpg');
+
             });
         });
     },
@@ -264,14 +255,16 @@ var G = {
             glitchweb.storeInSource(event.data.uri);
         });
         $('#delete').bind('click', {idx: G.current_idx}, function(event) {
-            var idx = event.data.idx;
-            glitchweb.deleteImage(idx);
-            // that means we have to go to next or previous as well....
-            // if next exists, go there
-            // if next does not exist, go to previous
-            // if previous does not exist, close
-            // rebuild the thumb list
-            if( idx !== (G.images.length - 1)) {
+
+            var origidx = idx = event.data.idx;
+            var origlength = G.images.length;
+
+            glitchweb.deleteImage(G.images[idx].id);
+            G.images.splice(idx,1);
+
+            // go to next, or previous images.
+            if( origidx !== (origlength - 1)) {
+                G.current_idx--;
                 G.active = true;
                 G.next.trigger('click.gallery');
             } else if ( idx !== 0) {
@@ -280,12 +273,14 @@ var G = {
             } else {
                 G.close();
             }
+            return false;
         });
     },
     /*
      * Unbind gallery control events
      */
     unbind: function () {
+        $('.thumb').unbind('click');
         $('a', G.controls[0]).unbind('click.gallery');
         $(document).unbind('keydown.gallery');
         $('div', G.controls[0]).unbind('mouseenter mouseleave');

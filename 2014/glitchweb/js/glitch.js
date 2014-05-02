@@ -238,10 +238,6 @@ var glitchweb = function() {
 
     var deleter = function() {
 
-        // alert('hey! delete me?');
-        // TODO: confirm deletion
-        // TODO: get all thumbs that are checked
-        // TODO: delete them.
         if(confirm('Delete all checked images?')) {
             $('input[type=checkbox]:checked').parent().each(function() {
                 // problem -- what index are we in glitches[]
@@ -274,7 +270,13 @@ var glitchweb = function() {
         getThumbArea().append($div);
 
         $img = $('#'+img.id);
-        gallery.add($img[0]);
+
+        $img.bind('dblclick', function(event) {
+            // this is the actual image clicked-on.
+            gallery.init(this);
+        });
+
+        // gallery.add($img[0]);
 
     };
 
@@ -313,7 +315,7 @@ var glitchweb = function() {
         var img = document.getElementById('original');
         img.onload = function() {
 
-            gallery.init();
+            // gallery.init();
             addThumb(img.src, generation);
             storeOrig(img);
 
@@ -351,14 +353,12 @@ var glitchweb = function() {
 
     };
 
-    // TODO: rework this whole idea, including when to init the gallery.
-    // in new concept ONLY init when double-click on image
-    // this means deleted images are never added.
-    var deleteImage = function(idx) {
+    var deleteImage = function(id) {
+        var idx = parseInt(id.replace('glitch', ''), 10);
         glitches.splice(idx, 1);
         generation--;
         updateGeneration(generation);
-        $('#glitch' + idx).parent().remove(); // hey, this isn't enough now, is it....
+        $('#glitch' + idx).parent().remove();
     };
 
     return {

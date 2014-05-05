@@ -63,6 +63,10 @@ var glitchweb = function() {
             return;
         }
 
+        // transform to intarry and back
+        // as we manipulate the array
+        // if we can do the manipulations on the raw URI this time-sink is removed
+
         // see http://stackoverflow.com/a/12713326/41153
         var intary = new Uint8Array(atob(b64).split("").map(function(c) {
             return c.charCodeAt(0); }));
@@ -90,6 +94,7 @@ var glitchweb = function() {
         };
 
         glitches[generation] = glitched.src;
+        glitches2[generation] = { uri: glitched.src, frame: data.frame };
 
         var targets = document.getElementById('targets');
         targets.removeChild(img);

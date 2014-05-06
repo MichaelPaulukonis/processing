@@ -2,12 +2,13 @@ var glitchweb = function() {
 
     var generation = 0,
         glitches = [],
-        glitches2 = [],
         autorun = false,
         running = false,
         gallery = G;
 
-    function getBase64Image(img) {
+
+    // poorly named, now that it returns b64 AND frame-data
+    var getBase64Image = function(img) {
         // Create an empty canvas element
         var canvas = document.createElement("canvas");
         canvas.width = img.width;
@@ -39,7 +40,7 @@ var glitchweb = function() {
 
         return data;
 
-    }
+    };
 
 
     var undo = function() {
@@ -47,10 +48,26 @@ var glitchweb = function() {
         generation--;
         glitches.length--;
         if (generation < 0) generation = 0;
-        document.getElementById('source').src = glitches[generation];
+        document.getElementById('source').src = glitches[generation].uri;
         updateGeneration(generation);
         console.log('generation is now ' + generation);
     };
+
+
+    var getImageAsByteArray = function(b64) {
+
+        // transform to intarry and back
+        // as we manipulate the array
+        // if we can do the manipulations on the raw URI this time-sink is removed
+
+        // see http://stackoverflow.com/a/12713326/41153
+        var intary = new Uint8Array(atob(b64).split("").map(function(c) {
+            return c.charCodeAt(0); }));
+
+        return intary;
+
+    };
+
 
     var glitchit = function(transform) {
 
@@ -63,14 +80,7 @@ var glitchweb = function() {
             return;
         }
 
-        // transform to intarry and back
-        // as we manipulate the array
-        // if we can do the manipulations on the raw URI this time-sink is removed
-
-        // see http://stackoverflow.com/a/12713326/41153
-        var intary = new Uint8Array(atob(b64).split("").map(function(c) {
-            return c.charCodeAt(0); }));
-        var mod1 = transform(intary);
+        var mod1 = transform(getImageAsByteArray(b64));
 
         updateGeneration(++generation);
 
@@ -94,7 +104,7 @@ var glitchweb = function() {
         };
 
         glitches[generation] = glitched.src;
-        glitches2[generation] = { uri: glitched.src, frame: data.frame };
+        glitches[generation] = { uri: glitched.src, frame: data.frame };
 
         var targets = document.getElementById('targets');
         targets.removeChild(img);
@@ -229,8 +239,11 @@ var glitchweb = function() {
 
     var storeOrig = function(img) {
 
-        var b64 = getBase64Image(img);
-        glitches[generation] = "data:image/jpeg;base64," + b64;
+        var data = getBase64Image(img);
+        glitches[generation] = "data:image/jpeg;base64," + data.uri;
+        glitches[generation] = { uri: "data:image/jpeg;base64," + data.uri,
+                                 frame: data.frame
+                                 };
 
     };
 
@@ -254,10 +267,7 @@ var glitchweb = function() {
                 // problem -- what index are we in glitches[]
                 var idx = parseInt($(this).find('img').attr('id').replace('glitch', ''), 10);
                 glitches.splice(idx,1);
-                // TODO: parse out index
                 this.remove();
-                // TODO: remove checked items from the glitches array!
-
             });
             generation = $('.thumb').length;
             updateGeneration(generation);
@@ -293,6 +303,7 @@ var glitchweb = function() {
 
     // also, note: these aren't really thumbs.
     // they're full-size images shrunk-down
+    // aaaand, we don't use this anymore.
     var showThumbs = function() {
 
         var ts = getThumbArea();
@@ -301,13 +312,72 @@ var glitchweb = function() {
         gallery.init();
 
         for (var i = 0; i < glitches.length; i ++) {
-            addThumb(glitches[i], i);
+            addThumb(glitches[i].uri, i);
         }
 
     };
 
 
-    var activate = function(selector, fn) {
+    var makeGif = function() {
+
+        var frames = [];
+
+        for (var i = 0; i < glitches.length; i++) {
+            console.log(i);
+            frames.push(glitches[i].frame);
+        }
+
+
+        // frame = { width: 0,
+        //           height: 0,
+        //           data: Uint8ClampedArray[10]
+        //           };
+
+        var delay = 100;
+        var width = 100; // hrm. we can change this during the glitching process....
+        var height = 100;
+
+        var workerobj = {
+            'frames': frames,
+            'delay': delay,
+            'width': frames[0].width,
+            'height': frames[0].height
+        };
+
+        buildgif(workerobj);
+
+    };
+
+    // taken whole-hog from pixl8r
+    var buildgif = function(gifdata) {
+
+        //document.getElementById('progress_bar').className = 'loading';
+
+        // TODO: notify that gif-assembly is beginning
+
+        console.log('starting worker build');
+
+        // TODO: needs to be rebuilt, as its a back-n-forth generator
+        var gifworker = new Worker('/js/gif-worker.js');
+
+        gifworker.onmessage = function(event) {
+            if (event.data.type === 'progress') {
+                // updateProgress(event.data.stepsDone, event.data.stepsTotal);
+            } else if (event.data.type === 'gif') {
+                gifout.src = event.data.datauri;
+                $(gifout).show();
+                // gifOut.parentElement.style.width = iwidth + 'px';
+                // progress.style.width = '100%';
+                // progress.textContent = '100%';
+            }
+        };
+
+        gifworker.postMessage(gifdata);
+
+    };
+
+
+    var bindButton = function(selector, fn) {
 
         var btn = document.getElementById(selector);
         if (btn) {
@@ -330,12 +400,13 @@ var glitchweb = function() {
             addThumb(img.src, generation);
             storeOrig(img);
 
-            activate('reset', reset);
-            activate('glitcher', function() { glitchit(transform1); });
-            activate('glitcher2', function() { glitchit(transform2); });
-            activate('undo', undo);
-            activate('showthumbs', showThumbs);
-            activate('deletechecked', deleter);
+            bindButton('reset', reset);
+            bindButton('glitcher', function() { glitchit(transform1); });
+            bindButton('glitcher2', function() { glitchit(transform2); });
+            bindButton('undo', undo);
+            bindButton('showthumbs', showThumbs);
+            bindButton('deletechecked', deleter);
+            bindButton('makegif', makeGif);
 
             var chk = document.getElementById('autorun');
             if (chk) {
@@ -366,66 +437,9 @@ var glitchweb = function() {
 
     var deleteImage = function(id) {
         var idx = parseInt(id.replace('glitch', ''), 10);
-        glitches.splice(idx, 1);
         generation--;
         updateGeneration(generation);
         $('#glitch' + idx).parent().remove();
-    };
-
-    var builder = function() {
-
-        // frames[] is populated as frames.push(externals.context.getImageData(0,0,width,height));
-        // we are going to have to keep this either _in parallel_ (ugh) with glitches[]
-        // or create a new array that stores an object containing
-        // { uri: "", frame: "" }
-        // or summat
-        var frames = [];
-
-        // frame = { width: 0,
-        //           height: 0,
-        //           data: Uint8ClampedArray[10]
-        //           };
-
-        var delay = 100;
-        var width = 100; // hrm. we can change this during the glitching process....
-        var height = 100;
-
-        var workerobj = {
-            'frames': frames,
-            'delay': delay,
-            'width': width,
-            'height': height
-        };
-
-        buildgif(workerobj);
-
-    };
-
-    // taken whole-hog from pixl8r
-    var buildgif = function(gifdata) {
-
-        document.getElementById('progress_bar').className = 'loading';
-
-        // TODO: notify that gif-assembly is beginning
-
-        console.log('starting worker build');
-
-        // TODO: needs to be rebuilt, as its a back-n-forth generator
-        var gifworker = new Worker('gif-worker.js');
-
-        gifworker.onmessage = function(event) {
-            if (event.data.type === 'progress') {
-                // updateProgress(event.data.stepsDone, event.data.stepsTotal);
-            } else if (event.data.type === 'gif') {
-                // gifOut.src = event.data.datauri;
-                // gifOut.parentElement.style.width = iwidth + 'px';
-                // progress.style.width = '100%';
-                // progress.textContent = '100%';
-            }
-        };
-
-        gifworker.postMessage(gifdata);
-
     };
 
     return {

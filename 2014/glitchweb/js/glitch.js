@@ -364,7 +364,11 @@ var glitchweb = function() {
         gifworker.onmessage = function(event) {
             if (event.data.type === 'progress') {
                 // updateProgress(event.data.stepsDone, event.data.stepsTotal);
+                console.log('stepsdone: ' + event.data.stepsDone + ' stepsTotal: ' + event.data.stepsTotal);
+            } else if (event.data.type === 'message') {
+                console.log(event.data.message);
             } else if (event.data.type === 'gif') {
+                console.log('ended worker build.');
                 gifout.src = event.data.datauri;
                 $(gifout).show();
                 // gifOut.parentElement.style.width = iwidth + 'px';

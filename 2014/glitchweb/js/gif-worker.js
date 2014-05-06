@@ -1,18 +1,7 @@
 /*
 
- Take the code that's in
-
- https://developer.mozilla.org/en-US/docs/Web/Guide/Performance/Using_web_workers
-
- http://www.html5rocks.com/en/tutorials/workers/basics/
-
-
- lines 39..63 will be the CALLER (goes into upload.js or .pde)
- https://github.com/h5bp/mothereffinganimatedgif/blob/4fe38aeff8c88b02a1340a012ffc8b1a5565a6ac/assets/js/mfanimated.js
-
- this is an example of the worker code (called by the above) building a gif.
- This is roughly what now done after the frames are created.
- https://github.com/h5bp/mothereffinganimatedgif/blob/master/assets/js/libraries/omggif-worker.js
+ using jsgif to encode
+ https://github.com/antimatter15/jsgif
 
  */
 
@@ -29,7 +18,10 @@ onmessage = function(event) {
     var startGif = function(gifobj) {
         // store original as first frame, w/ 1/2 delay
 
-        encoder.setRepeat(0);
+        // actually, we have TWO loop scenarios
+        // repeat thegif ad infinitum
+        // and loop back to origin....
+        encoder.setRepeat(gifobj.loop); // 0 = forever, 1+ loop n times [or once, in our case]
         encoder.setDelay(500);
         encoder.setSize(gifobj.width, gifobj.height);
         encoder.start();
@@ -38,8 +30,6 @@ onmessage = function(event) {
         encoder.setDelay(gifobj.delay);
 
     };
-
-
 
     startGif(gifobj);
 
@@ -55,17 +45,22 @@ onmessage = function(event) {
         });
     }
 
-    // ugh. better way to come....
-    for (i = gifobj.frames.length-1; i >= 1; i--) {
-        encoder.addFrame(gifobj.frames[i].data, true);
-        stepsDone++;
-        self.postMessage({
-            type: 'progress',
-            stepsDone: stepsDone,
-            stepsTotal: gifobj.stepsTotal
-        });
-    }
+    // hrm. should we pause on the "last" frame?
+    // if we reverse, the last frame is the first frame. so....
+    // but if we do not reverse, we have ALREADY PASSED the last frame...
 
+    if (gifobj.reverse) {
+        // ugh. better way to come....
+        for (i = gifobj.frames.length-1; i >= 1; i--) {
+            encoder.addFrame(gifobj.frames[i].data, true);
+            stepsDone++;
+            self.postMessage({
+                type: 'progress',
+                stepsDone: stepsDone,
+                stepsTotal: gifobj.stepsTotal
+            });
+        }
+    }
 
     encoder.finish();
     var url = 'data:image/gif;base64,' + encode64(encoder.stream().getData());

@@ -333,13 +333,15 @@ var glitchweb = function() {
         //           data: Uint8ClampedArray[10]
         //           };
 
-        var delay = 100;
-        var width = 100; // hrm. we can change this during the glitching process....
-        var height = 100;
+        var delay = 100,
+            loop = 0,
+            reverse = false;
 
         var workerobj = {
             'frames': frames,
             'delay': delay,
+            'loop': 0,
+            'reverse': reverse,
             'width': frames[0].width,
             'height': frames[0].height
         };
@@ -348,7 +350,6 @@ var glitchweb = function() {
 
     };
 
-    // taken whole-hog from pixl8r
     var buildgif = function(gifdata) {
 
         //document.getElementById('progress_bar').className = 'loading';

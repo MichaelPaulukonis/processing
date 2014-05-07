@@ -7,6 +7,30 @@ var glitchweb = function() {
         gallery = G;
 
 
+    // Avoid `console` errors in browsers that lack a console.
+    // http://stackoverflow.com/a/7585409/41153
+    (function() {
+        var method;
+        var noop = function () {};
+        var methods = [
+            'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
+            'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
+            'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
+            'timeStamp', 'trace', 'warn'
+        ];
+        var length = methods.length;
+        var console = (window.console = window.console || {});
+
+        while (length--) {
+            method = methods[length];
+
+            // Only stub undefined methods.
+            if (!console[method]) {
+                console[method] = noop;
+            }
+        }
+    }());
+
     // poorly named, now that it returns b64 AND frame-data
     var getBase64Image = function(img) {
         // Create an empty canvas element
@@ -44,11 +68,12 @@ var glitchweb = function() {
 
 
     var undo = function() {
+        debugger;
         console.log('undo from gen ' + generation + ' to ' + (generation - 1));
         generation--;
-        glitches.length--;
+        if (glitches.length > 0) glitches.length--;
         if (generation < 0) generation = 0;
-        document.getElementById('source').src = glitches[generation].uri;
+        $('#source').src = glitches[generation].uri;
         updateGeneration(generation);
         console.log('generation is now ' + generation);
     };
@@ -162,6 +187,7 @@ var glitchweb = function() {
         var orig = document.getElementById('original');
         var source = document.getElementById('source');
         source.src = orig.src;
+        $('#gifout').hide();
 
         clearThumbs();
 
@@ -243,7 +269,7 @@ var glitchweb = function() {
         glitches[generation] = "data:image/jpeg;base64," + data.uri;
         glitches[generation] = { uri: "data:image/jpeg;base64," + data.uri,
                                  frame: data.frame
-                                 };
+                               };
 
     };
 
@@ -301,22 +327,6 @@ var glitchweb = function() {
 
     };
 
-    // also, note: these aren't really thumbs.
-    // they're full-size images shrunk-down
-    // aaaand, we don't use this anymore.
-    var showThumbs = function() {
-
-        var ts = getThumbArea();
-        ts.empty();
-
-        gallery.init();
-
-        for (var i = 0; i < glitches.length; i ++) {
-            addThumb(glitches[i].uri, i);
-        }
-
-    };
-
 
     var makeGif = function() {
 
@@ -326,7 +336,6 @@ var glitchweb = function() {
             console.log(i);
             frames.push(glitches[i].frame);
         }
-
 
         // frame = { width: 0,
         //           height: 0,
@@ -342,10 +351,11 @@ var glitchweb = function() {
             'delay': delay,
             'loop': 0,
             'reverse': reverse,
-            'width': frames[0].width,
+            'width': frames[0].width, // don't need this -- it's on the first frame
             'height': frames[0].height
         };
 
+        debugger;
         buildgif(workerobj);
 
     };
@@ -409,7 +419,6 @@ var glitchweb = function() {
             bindButton('glitcher', function() { glitchit(transform1); });
             bindButton('glitcher2', function() { glitchit(transform2); });
             bindButton('undo', undo);
-            bindButton('showthumbs', showThumbs);
             bindButton('deletechecked', deleter);
             bindButton('makegif', makeGif);
 

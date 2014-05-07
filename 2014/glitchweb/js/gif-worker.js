@@ -48,6 +48,13 @@ onmessage = function(event) {
         });
     }
 
+    //encoder.addFrame(gifobj.frames[gifobj.frames.length-1].data, true);
+
+    self.postMessage({
+        type: 'message',
+        message: gifobj.frames[gifobj.frames.length-1].data
+    });
+
     // hrm. should we pause on the "last" frame?
     // if we reverse, the last frame is the first frame. so....
     // but if we do not reverse, we have ALREADY PASSED the last frame...

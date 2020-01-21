@@ -99,7 +99,7 @@ void drawPix()
 {
 
   setPixSize(autoDirection);
-  pixelateImage(pixSize);
+  pixelateImageNew(pixSize);
   stepCount += autoDirection;
 
   // this does not nesc get us back to ZERO
@@ -125,10 +125,57 @@ void drawPix()
 // but I don't like how it looks in a sequence
 void pixelateImage(int pxSize) {
 
+  // TODO: work from center of image outward
+  // or optionally pick the center
   for (int x=0; x<width; x+=pxSize) {
     for (int y=0; y<height; y+=pxSize) {
       fill(getColor(x, y));
       rect(x, y, pxSize, pxSize);
+    }
+  }
+
+}
+
+void pixelateImageNew(int pxSize) {
+
+  // TODO: work from center of image outward
+  // or optionally pick the center
+  // FIRST PASS: work in quadrants - lower-right is the easiest
+
+  // lower-right
+  int centerX = width/2;
+  int centerY = height/2;
+  for (int x=centerX; x<width; x+=pxSize) {
+    for (int y=centerY; y<height; y+=pxSize) {
+      fill(getColor(x, y));
+      rect(x, y, pxSize, pxSize);
+    }
+  }
+
+  // either the left-side is off, or the right is. NOT SURE WHICH
+
+  // lower-left
+  // setting the initial value for x to (centerX - pxSize) didn't seem to work.
+  for (int x = centerX; x > 0; x -= pxSize) {
+    for (int y = centerY; y < height; y += pxSize) {
+      fill(getColor(x-pxSize, y));
+      rect(x-pxSize, y, pxSize, pxSize);
+    }
+  }
+
+  // upper-right
+  for (int x=centerX; x<width; x+=pxSize) {
+    for (int y = centerY; y > 0; y -= pxSize) {
+      fill(getColor(x, y-pxSize));
+      rect(x, y-pxSize, pxSize, pxSize);
+    }
+  }
+
+  // upper-left
+  for (int x = centerX; x > 0; x -= pxSize) {
+    for (int y = centerY; y > 0; y -= pxSize) {
+      fill(getColor(x-pxSize, y-pxSize));
+      rect(x-pxSize, y-pxSize, pxSize, pxSize);
     }
   }
 
@@ -139,6 +186,8 @@ void pixelateImage(int pxSize) {
 // but works for what I'm currently doing....
 color getColor(int xLoc, int yLoc) {
 
+  if (yLoc < 0) { yLoc = 0 }
+  if (xLoc < 0) { xLoc = 0 }
   float r=0, b=0, g=0;
   int pixelCount=0;
 

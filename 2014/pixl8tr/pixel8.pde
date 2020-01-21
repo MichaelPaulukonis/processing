@@ -43,17 +43,12 @@ void draw() {
     buildmode = false;
 
   } else {
-
     if (pixel8.paused && singlestep == true) {
-
       drawPix();
       m = millis();
       singlestep = false;
-
     } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
-
       drawPix();
-
       m = millis();
     }
   }
@@ -99,7 +94,13 @@ void drawPix()
 {
 
   setPixSize(autoDirection);
-  pixelateImageNew(pixSize);
+  if (pixel8.type == 0) {
+    pixelateImageUpperLeft(pixSize);
+  } else if (pixel8.type == 1) {
+    pixelateImageCenter(pixSize);
+  } else if (pixel8.type == 2) {
+    pixelateImageDivides(pixSize);
+  }
   stepCount += autoDirection;
 
   // this does not nesc get us back to ZERO
@@ -123,20 +124,20 @@ void drawPix()
 // there's an issue where the right-hand strip comes and goes
 // it's an average problem. probably "correct"
 // but I don't like how it looks in a sequence
-void pixelateImage(int pxSize) {
+void pixelateImageUpperLeft(int pxSize) {
 
   // TODO: work from center of image outward
   // or optionally pick the center
   for (int x=0; x<width; x+=pxSize) {
     for (int y=0; y<height; y+=pxSize) {
-      fill(getColor(x, y));
+      fill(getColor(x, y, pxSize));
       rect(x, y, pxSize, pxSize);
     }
   }
 
 }
 
-void pixelateImageNew(int pxSize) {
+void pixelateImageCenter(int pxSize) {
 
   // TODO: work from center of image outward
   // or optionally pick the center
@@ -147,7 +148,7 @@ void pixelateImageNew(int pxSize) {
   int centerY = height/2;
   for (int x=centerX; x<width; x+=pxSize) {
     for (int y=centerY; y<height; y+=pxSize) {
-      fill(getColor(x, y));
+      fill(getColor(x, y, pxSize));
       rect(x, y, pxSize, pxSize);
     }
   }
@@ -158,7 +159,7 @@ void pixelateImageNew(int pxSize) {
   // setting the initial value for x to (centerX - pxSize) didn't seem to work.
   for (int x = centerX; x > 0; x -= pxSize) {
     for (int y = centerY; y < height; y += pxSize) {
-      fill(getColor(x-pxSize, y));
+      fill(getColor(x-pxSize, y, pxSize));
       rect(x-pxSize, y, pxSize, pxSize);
     }
   }
@@ -166,7 +167,7 @@ void pixelateImageNew(int pxSize) {
   // upper-right
   for (int x=centerX; x<width; x+=pxSize) {
     for (int y = centerY; y > 0; y -= pxSize) {
-      fill(getColor(x, y-pxSize));
+      fill(getColor(x, y-pxSize, pxSize));
       rect(x, y-pxSize, pxSize, pxSize);
     }
   }
@@ -174,28 +175,44 @@ void pixelateImageNew(int pxSize) {
   // upper-left
   for (int x = centerX; x > 0; x -= pxSize) {
     for (int y = centerY; y > 0; y -= pxSize) {
-      fill(getColor(x-pxSize, y-pxSize));
+      fill(getColor(x-pxSize, y-pxSize, pxSize));
       rect(x-pxSize, y-pxSize, pxSize, pxSize);
     }
   }
+}
 
+// ahhhhhhhhh, if this number is too high, things get bananas
+// we need a better grasp of what's going on
+void pixelateImageDivides(int pxSize) {
+  console.log(pxSize);
+  // treats pxSize as a count, instead
+  float xWidth = width / pxSize;
+  float yHeight = height / pxSize;
+
+  for (int x = 0; x < width; x += xWidth) {
+    for (int y = 0; y < height; y += yHeight) {
+      fill(getColor((int)x, (int)y, (int)xWidth));
+      console.log(x, y, xWidth, yHeight);
+      rect((int)x, (int)y, (int)xWidth, (int)yHeight);
+    }
+  }
 }
 
 // average code based on http://stackoverflow.com/a/12408627/41153
 // this is likely to fail if xLoc,yLoc is with pixSize of width,height
 // but works for what I'm currently doing....
-color getColor(int xLoc, int yLoc) {
+color getColor(int xLoc, int yLoc, int pixSize) {
 
   if (yLoc < 0) { yLoc = 0 }
   if (xLoc < 0) { xLoc = 0 }
-  float r=0, b=0, g=0;
-  int pixelCount=0;
+  float r = 0, b = 0, g = 0;
+  int pixelCount = 0;
 
   for (int y = yLoc; y < yLoc + pixSize; y++) {
     for (int x = xLoc; x < xLoc + pixSize; x++) {
       // trap for out-of bounds "averages"
       // which skew towards black
-      if (x<width && y < height) {
+      if (x < width && y < height) {
         color c = img.get(x, y);
         r += red(c);
         g += green(c);

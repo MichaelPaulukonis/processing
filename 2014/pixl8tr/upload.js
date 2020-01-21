@@ -94,7 +94,8 @@ var pixel8 = {
     maxSteps: 20,
     step: function() { log('step'); singlestep = true; },
     build: build,
-    saveframe: savecanvas
+    saveframe: savecanvas,
+    type: 0
 };
 
 var getProcessingInstance = function(id) {
@@ -111,17 +112,12 @@ var cleanUp = function() {
     if (oldp) oldp.exit();
 
     removeOldCanvas();
-
     gifOut.removeAttribute('src');
 
     setupGui();
-
     buildmode = false;
-
     frames = [];
-
     document.getElementById('progress_bar').className = '';
-
 };
 
 
@@ -152,9 +148,8 @@ var setupGui = function() {
         gui.add(pixel8, 'maxSteps').min(1).max(100).step(1);
         gui.add(pixel8, 'build');
         gui.add(pixel8, 'saveframe');
-
+        gui.add(pixel8, 'type', { UpperLeft: 0, Center: 1, Divvy: 2 } );
     }
-
 };
 
 
@@ -168,14 +163,12 @@ var updateProgress = function(step, total) {
 };
 
 var scaleCanvas = function(width) {
-
     var canvas = document.querySelector('canvas');
 
     var pct = Math.round(600/width * 100);
     if (pct < 100) {
         canvas.style.width = '100%'; // shrink large; leave smaller alone
     }
-
 };
 
 // http://www.html5rocks.com/en/tutorials/file/dndfiles/

@@ -20,12 +20,12 @@ var savecanvas = function() {
     }
 };
 
-var log = function(msg) {
+var logger = function(msg) {
     if (console && console.log) console.log(msg);
 };
 
 var build = function() {
-    log('buildGif');
+    logger('buildGif');
     gifOut.removeAttribute('src');
     getProcessingInstance(getProcessingSketchId()).loop();
     buildmode = true;
@@ -38,7 +38,7 @@ var pixel8 = {
     initialSize: 5,
     stepSize: 5,
     maxSteps: 20,
-    step: function() { log('step'); singlestep = true; },
+    step: function() { logger('step'); singlestep = true; },
     build: build,
     saveframe: savecanvas,
     type: 2,
@@ -46,15 +46,15 @@ var pixel8 = {
     dMax: 20
 };
 
-var getProcessingInstance = function(id) {
-    var i = Processing.getInstanceById(id);
-    return i;
-};
+// var getProcessingInstance = function(id) {
+//     var i = Processing.getInstanceById(id);
+//     return i;
+// };
 
 var cleanUp = function() {
     // kill previous code (if any)
-    var oldp = getProcessingInstance(getProcessingSketchId());
-    if (oldp) oldp.exit();
+    // var oldp = getProcessingInstance(getProcessingSketchId());
+    // if (oldp) oldp.exit();
 
     removeOldCanvas();
     gifOut.removeAttribute('src');
@@ -138,14 +138,12 @@ var handleFileSelect = function(evt) {
                     iwidth = img.width;
                     iheight = img.height;
                     cleanUp();
-                    var c = document.createElement('canvas');
-                    c.setAttribute('width', iwidth);
-                    c.setAttribute('height', iheight);
-                    c.setAttribute('id', getProcessingSketchId());
-                    var placeholder = document.querySelector('#placeholder');
-                    placeholder.appendChild(c);
-                    var canvas = document.querySelector('#jstest');
-                    Processing.loadSketchFromSources(canvas, ["pixel8.pde"]);
+                    // var c = document.createElement('canvas');
+                    // c.setAttribute('width', iwidth);
+                    // c.setAttribute('height', iheight);
+                    // c.setAttribute('id', getProcessingSketchId());
+                    // var placeholder = document.querySelector('#placeholder');
+                    // placeholder.appendChild(c);
                 };
             };
         })(f);
@@ -180,7 +178,7 @@ var buildgif = function(gifdata) {
 
     // TODO: notify that gif-assembly is beginning
 
-    log('starting worker build');
+    logger('starting worker build');
     var gifworker = new Worker('gif-worker.js');
     gifworker.onmessage = function(event) {
         if (event.data.type === 'progress') {

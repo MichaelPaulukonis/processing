@@ -23,6 +23,7 @@ canvas {
     display: block;
     outline: 0px;
     margin-bottom: 1.5em;
+    border: 1px dashed #CCC;
 }
 
 #uploadform {

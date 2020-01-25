@@ -17,13 +17,9 @@ boolean buildStarted = false;
 void setup() {
   size(iwidth, iheight);
   noStroke();
-
   scaleCanvas(iwidth);
-
   img = loadImage(uri); // still has a loading time....
-
   m = millis();
-
 }
 
 void draw() {
@@ -37,11 +33,9 @@ void draw() {
   // then we will start from ground zero and loop around.
 
   if (buildmode) {
-
     noLoop();
     buildGif();
     buildmode = false;
-
   } else {
     if (pixel8.paused && singlestep == true) {
       drawPix();
@@ -56,7 +50,6 @@ void draw() {
 
 
 void buildGif() {
-
   image(img, 0, 0);
   frames.push(externals.context.getImageData(0,0,width,height));
 
@@ -79,53 +72,52 @@ void buildGif() {
     'height': height
   };
 
-
   image(img, 0, 0);
-
   buildgif(workerobj);
-
 }
 
-
+int setPixSize(int direction, int pixSize, int stepSize) {
+  pixSize = (pixSize + (direction * stepSize));
+  if (pixSize < stepSize) pixSize = stepSize;
+  return pixSize;
+}
 
 // loop purely for manual monitoring
 // for export [for, say, a gif], do it faster
-void drawPix()
-{
-
-  setPixSize(autoDirection);
+void drawPix() {
+  pixSize = setPixSize(autoDirection, pixSize, pixel8.stepSize);
   if (pixel8.type == 0) {
     pixelateImageUpperLeft(pixSize);
   } else if (pixel8.type == 1) {
     pixelateImageCenter(pixSize);
   } else if (pixel8.type == 2) {
-    pixelateImageDivides(pixSize);
+    pixelateImageDivides(stepCount);
+    stepCount += autoDirection;
+    if (stepCount > pixel8.dMax || stepCount < pixel8.dMin) {
+      stepCount = constrain(stepCount, pixel8.dMin, pixel8.dMax)
+      autoDirection *= -1;
+      revCount++;
+    }
+    return;
   }
-  stepCount += autoDirection;
 
+  stepCount += autoDirection;
   // this does not nesc get us back to ZERO
   var curSize = (pixel8.stepSize * pixel8.maxSteps) + pixel8.initialSize;
-
-  // log('stepCount: ' + stepCount + ' pixSize: ' + pixSize
-  //             + ' revCount: ' + revCount + ' curSize: ' + curSize);
-
   if (pixSize >= curSize || pixSize <= pixel8.stepSize
       || pixSize >= width || pixSize >= height) {
     if (pixSize >= curSize) pixSize = curSize;
     if (pixSize > width) pixSize = width;
     if (pixSize > height) pixSize = height;
-    autoDirection = -(autoDirection);
+    autoDirection *= -1;
     revCount++;
-    // log('direction changed, revcount incremented to: ' + revCount);
   }
-
 }
 
 // there's an issue where the right-hand strip comes and goes
 // it's an average problem. probably "correct"
 // but I don't like how it looks in a sequence
 void pixelateImageUpperLeft(int pxSize) {
-
   // TODO: work from center of image outward
   // or optionally pick the center
   for (int x=0; x<width; x+=pxSize) {
@@ -134,15 +126,9 @@ void pixelateImageUpperLeft(int pxSize) {
       rect(x, y, pxSize, pxSize);
     }
   }
-
 }
 
 void pixelateImageCenter(int pxSize) {
-
-  // TODO: work from center of image outward
-  // or optionally pick the center
-  // FIRST PASS: work in quadrants - lower-right is the easiest
-
   // lower-right
   int centerX = width/2;
   int centerY = height/2;
@@ -152,8 +138,6 @@ void pixelateImageCenter(int pxSize) {
       rect(x, y, pxSize, pxSize);
     }
   }
-
-  // either the left-side is off, or the right is. NOT SURE WHICH
 
   // lower-left
   // setting the initial value for x to (centerX - pxSize) didn't seem to work.
@@ -184,16 +168,18 @@ void pixelateImageCenter(int pxSize) {
 // ahhhhhhhhh, if this number is too high, things get bananas
 // we need a better grasp of what's going on
 void pixelateImageDivides(int pxSize) {
-  console.log(pxSize);
+  // console.log(pxSize);
   // treats pxSize as a count, instead
   float xWidth = width / pxSize;
   float yHeight = height / pxSize;
 
-  for (int x = 0; x < width; x += xWidth) {
-    for (int y = 0; y < height; y += yHeight) {
-      fill(getColor((int)x, (int)y, (int)xWidth));
-      console.log(x, y, xWidth, yHeight);
-      rect((int)x, (int)y, (int)xWidth, (int)yHeight);
+  for (float x = 0; x < width; x += xWidth) {
+    for (float y = 0; y < height; y += yHeight) {
+      Color c = getColor(x, y, xWidth);
+      console.log(c);
+      fill(c);
+      // console.log(x, y, xWidth, yHeight);
+      rect(x, y, xWidth, yHeight);
     }
   }
 }
@@ -202,7 +188,6 @@ void pixelateImageDivides(int pxSize) {
 // this is likely to fail if xLoc,yLoc is with pixSize of width,height
 // but works for what I'm currently doing....
 color getColor(int xLoc, int yLoc, int pixSize) {
-
   if (yLoc < 0) { yLoc = 0 }
   if (xLoc < 0) { xLoc = 0 }
   float r = 0, b = 0, g = 0;
@@ -213,7 +198,7 @@ color getColor(int xLoc, int yLoc, int pixSize) {
       // trap for out-of bounds "averages"
       // which skew towards black
       if (x < width && y < height) {
-        color c = img.get(x, y);
+        color c = img.get(floor(x), floor(y));
         r += red(c);
         g += green(c);
         b += blue(c);
@@ -223,12 +208,5 @@ color getColor(int xLoc, int yLoc, int pixSize) {
   }
 
   color averageColor = color(r/pixelCount, g/pixelCount, b/pixelCount);
-
   return averageColor;
-}
-
-
-void setPixSize(int direction) {
-  pixSize = (pixSize + (direction * pixel8.stepSize));
-  if (pixSize < pixel8.stepSize) pixSize = pixel8.stepSize;
 }

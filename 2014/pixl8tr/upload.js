@@ -200,7 +200,7 @@ var startGif = function(gifobj) {
     // store original as first frame, w/ 1/2 delay
 
     encoder.setRepeat(0);
-    encoder.setDelay(500);
+    encoder.setDelay(pixel8.delay);
     encoder.setSize(gifobj.width, gifobj.height);
     encoder.start();
 

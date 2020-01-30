@@ -60,8 +60,8 @@ function draw () {
             m = millis();
             singlestep = false;
             loop()
-            // } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
-        } else if (!pixel8.paused) {
+        } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
+            // } else if (!pixel8.paused) {
             // noLoop()
             // console.log('starting to draw!')
             drawPix();

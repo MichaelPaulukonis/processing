@@ -73,11 +73,15 @@ function draw () {
 
 
 function buildGif () {
-    image(img, 0, 0);
-    frames.push(getImageData(0, 0, width, height));
+    // capture original image
+    // eh, forget it
+    // image(img, 0, 0);
+    // frames.push(drawingContext.getImageData(0, 0, width, height));
 
     // reset
     // we don't store frames in "test mode" since any variable may change prior to build
+    // TODO: but if they DON'T change, it would be nice to keep them around!
+    // if params are dirty, discard everything and start over
     revCount = 0;
     pixSize = pixel8.initialSize;
 
@@ -85,10 +89,10 @@ function buildGif () {
     // repeat it on the back end....
     while (revCount !== 1) {
         drawPix();
-        frames.push(getImageData(0, 0, width, height));
+        frames.push(drawingContext.getImageData(0, 0, width, height));
     }
 
-    var workerobj = {
+    var gifData = {
         'frames': frames,
         'delay': pixel8.delay,
         'width': width,
@@ -96,7 +100,7 @@ function buildGif () {
     };
 
     image(img, 0, 0);
-    buildgif(workerobj);
+    buildgif(gifData);
 }
 
 const setPixSize = (direction, pixSize, stepSize) => {

@@ -29,14 +29,15 @@ function setup () {
 
 const gotFile = (file) => {
     if (file && file.type === 'image') {
-      img = loadImage(file.data, () => { 
-          img.loadPixels()
-          resizeCanvas(img.width, img.height)
-      })
+        img = loadImage(file.data, () => {
+            img.loadPixels()
+            resizeCanvas(img.width, img.height)
+            //   resizeCanvas(img.width / 2, img.height / 2)
+        })
     } else {
-      println('Not an image file!')
+        console.log('Not an image file!')
     }
-  }
+}
 
 function draw () {
 
@@ -54,12 +55,18 @@ function draw () {
         buildmode = false;
     } else {
         if (pixel8.paused && singlestep == true) {
+            noLoop()
             drawPix();
             m = millis();
             singlestep = false;
-        } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
+            loop()
+            // } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
+        } else if (!pixel8.paused) {
+            // noLoop()
+            // console.log('starting to draw!')
             drawPix();
             m = millis();
+            // loop()
         }
     }
 }
@@ -67,7 +74,7 @@ function draw () {
 
 function buildGif () {
     image(img, 0, 0);
-    frames.push(externals.context.getImageData(0, 0, width, height));
+    frames.push(getImageData(0, 0, width, height));
 
     // reset
     // we don't store frames in "test mode" since any variable may change prior to build
@@ -78,7 +85,7 @@ function buildGif () {
     // repeat it on the back end....
     while (revCount !== 1) {
         drawPix();
-        frames.push(externals.context.getImageData(0, 0, width, height));
+        frames.push(getImageData(0, 0, width, height));
     }
 
     var workerobj = {
@@ -192,7 +199,6 @@ function pixelateImageDivides (pxSize) {
     for (var x = 0; x < width; x += xWidth) {
         for (var y = 0; y < height; y += yHeight) {
             const c = getColor(x, y, xWidth);
-            console.log(c);
             fill(c);
             // console.log(x, y, xWidth, yHeight);
             rect(x, y, xWidth, yHeight);
@@ -209,15 +215,24 @@ const getColor = (xLoc, yLoc, pixSize) => {
     var r = 0, b = 0, g = 0;
     var pixelCount = 0;
 
+    // var pix = img.drawingContext.getImageData(locX, locY, 1, 1).data
+    // return p5.color(pix[0], pix[1], pix[2])
+
+
     for (var y = yLoc; y < yLoc + pixSize; y++) {
         for (var x = xLoc; x < xLoc + pixSize; x++) {
             // trap for out-of bounds "averages"
             // which skew towards black
             if (x < width && y < height) {
-                const c = img.get(floor(x), floor(y));
-                r += red(c);
-                g += green(c);
-                b += blue(c);
+                // const c = img.get(floor(x), floor(y));
+                const pix = img.drawingContext.getImageData(floor(x), floor(y), 1, 1).data
+                // return p5.color(pix[0], pix[1], pix[2])
+                r += pix[0]
+                g += pix[1]
+                b += pix[2]
+                // r += red(c);
+                // g += green(c);
+                // b += blue(c);
                 pixelCount++;
             }
         }

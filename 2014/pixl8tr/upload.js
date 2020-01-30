@@ -27,7 +27,7 @@ var logger = function(msg) {
 var build = function() {
     logger('buildGif');
     gifOut.removeAttribute('src');
-    getProcessingInstance(getProcessingSketchId()).loop();
+    // getProcessingInstance(getProcessingSketchId()).loop();
     buildmode = true;
 };
 

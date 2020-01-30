@@ -168,7 +168,6 @@ void pixelateImageCenter(int pxSize) {
 // ahhhhhhhhh, if this number is too high, things get bananas
 // we need a better grasp of what's going on
 void pixelateImageDivides(int pxSize) {
-  // console.log(pxSize);
   // treats pxSize as a count, instead
   int xWidth = (int)width / pxSize;
   int yHeight = (int)height / pxSize;
@@ -176,9 +175,7 @@ void pixelateImageDivides(int pxSize) {
   for (int x = 0; x < width; x += xWidth) {
     for (int y = 0; y < height; y += yHeight) {
       Color c = getColor(x, y, xWidth);
-      console.log(c);
       fill(c);
-      // console.log(x, y, xWidth, yHeight);
       rect(x, y, xWidth+2, yHeight+2);
     }
   }

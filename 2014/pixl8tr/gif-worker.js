@@ -19,34 +19,23 @@
 importScripts('NeuQuant.js', 'LZWEncoder.js', 'GIFEncoder.js', 'b64.js');
 
 onmessage = function(event) {
-    // this was a preliminary test
-    // postMessage('delay: ' + event.data.delay);
 
     var gifobj = event.data,
         encoder = new GIFEncoder(),
-        stepsDone = 1;
-
+        stepsDone = 0;
 
     var startGif = function(gifobj) {
-        // store original as first frame, w/ 1/2 delay
-
         encoder.setRepeat(0);
-        encoder.setDelay(500);
         encoder.setSize(gifobj.width, gifobj.height);
         encoder.start();
-
-        encoder.addFrame(gifobj.frames[0].data, true);
         encoder.setDelay(gifobj.delay);
-
     };
-
-
 
     startGif(gifobj);
 
     // we want a loop -- but are only provided with the upward pass
     // no probs -- reverse it
-    for (var i = 1; i < gifobj.frames.length; i++) {
+    for (var i = 0; i < gifobj.frames.length; i++) {
         encoder.addFrame(gifobj.frames[i].data, true);
         stepsDone++;
         self.postMessage({
@@ -57,7 +46,7 @@ onmessage = function(event) {
     }
 
     // ugh. better way to come....
-    for (i = gifobj.frames.length-1; i >= 1; i--) {
+    for (i = gifobj.frames.length-1; i >= 0; i--) {
         encoder.addFrame(gifobj.frames[i].data, true);
         stepsDone++;
         self.postMessage({
@@ -70,7 +59,6 @@ onmessage = function(event) {
 
     encoder.finish();
     var url = 'data:image/gif;base64,' + encode64(encoder.stream().getData());
-
 
     self.postMessage({
         type: "gif",

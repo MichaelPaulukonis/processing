@@ -31,8 +31,9 @@ const gotFile = (file) => {
     if (file && file.type === 'image') {
         img = loadImage(file.data, () => {
             img.loadPixels()
+            // resizeCanvas(img.width, img.height)
             resizeCanvas(img.width, img.height)
-            //   resizeCanvas(img.width / 2, img.height / 2)
+            scaleCanvas(iwidth);
         })
     } else {
         console.log('Not an image file!')
@@ -61,12 +62,8 @@ function draw () {
             singlestep = false;
             loop()
         } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
-            // } else if (!pixel8.paused) {
-            // noLoop()
-            // console.log('starting to draw!')
             drawPix();
             m = millis();
-            // loop()
         }
     }
 }
@@ -83,10 +80,14 @@ function buildGif () {
     // TODO: but if they DON'T change, it would be nice to keep them around!
     // if params are dirty, discard everything and start over
     revCount = 0;
-    pixSize = pixel8.initialSize;
+    stepCount = pixel8.dMin
+    pixSize = pixel8.dMin;
+    direction = 1;
 
     // only build the FIRST iteration
     // repeat it on the back end....
+    // TODO: how about CONTROL THE LOOPING HERE
+    // we're relying on some weird variable to get set somewhere else. yick.
     while (revCount !== 1) {
         drawPix();
         frames.push(drawingContext.getImageData(0, 0, width, height));
@@ -123,7 +124,7 @@ function drawPix () {
         if (stepCount > pixel8.dMax || stepCount < pixel8.dMin) {
             stepCount = constrain(stepCount, pixel8.dMin, pixel8.dMax)
             autoDirection *= -1;
-            revCount++;
+            revCount++; // this is the "reverseCount" used for building the gif only. ugh.
         }
         return;
     }
@@ -194,18 +195,15 @@ function pixelateImageCenter (pxSize) {
 
 // ahhhhhhhhh, if this number is too high, things get bananas
 // we need a better grasp of what's going on
-function pixelateImageDivides (pxSize) {
-    // console.log(pxSize);
-    // treats pxSize as a count, instead
-    var xWidth = width / pxSize;
-    var yHeight = height / pxSize;
+function pixelateImageDivides (cellCount) {
+    var xWidth = width / cellCount;
+    var yHeight = height / cellCount;
 
     for (var x = 0; x < width; x += xWidth) {
         for (var y = 0; y < height; y += yHeight) {
-            const c = getColor(x, y, xWidth);
+            const c = getColor(x, y, xWidth, true);
             fill(c);
-            // console.log(x, y, xWidth, yHeight);
-            rect(x, y, xWidth, yHeight);
+            rect(x, y, xWidth + 2, yHeight + 2);
         }
     }
 }
@@ -213,33 +211,18 @@ function pixelateImageDivides (pxSize) {
 // average code based on http://stackoverflow.com/a/12408627/41153
 // this is likely to fail if xLoc,yLoc is with pixSize of width,height
 // but works for what I'm currently doing....
-const getColor = (xLoc, yLoc, pixSize) => {
+const getColor = (xLoc, yLoc, cellSize) => {
     if (yLoc < 0) { yLoc = 0 }
     if (xLoc < 0) { xLoc = 0 }
-    var r = 0, b = 0, g = 0;
-    var pixelCount = 0;
+    let r = 0, b = 0, g = 0;
+    const pixelCount = cellSize * cellSize
 
-    // var pix = img.drawingContext.getImageData(locX, locY, 1, 1).data
-    // return p5.color(pix[0], pix[1], pix[2])
-
-
-    for (var y = yLoc; y < yLoc + pixSize; y++) {
-        for (var x = xLoc; x < xLoc + pixSize; x++) {
-            // trap for out-of bounds "averages"
-            // which skew towards black
-            if (x < width && y < height) {
-                // const c = img.get(floor(x), floor(y));
-                const pix = img.drawingContext.getImageData(floor(x), floor(y), 1, 1).data
-                // return p5.color(pix[0], pix[1], pix[2])
-                r += pix[0]
-                g += pix[1]
-                b += pix[2]
-                // r += red(c);
-                // g += green(c);
-                // b += blue(c);
-                pixelCount++;
-            }
-        }
+    const allPixels = img.drawingContext.getImageData(xLoc, yLoc, cellSize, cellSize).data
+    for (let i = 0; i < allPixels.length; i += 4) {
+        r += allPixels[i]
+        g += allPixels[i + 1]
+        b += allPixels[i + 2]
+        // skip alpha
     }
 
     const averageColor = color(r / pixelCount, g / pixelCount, b / pixelCount);

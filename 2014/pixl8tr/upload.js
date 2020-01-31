@@ -108,6 +108,7 @@ var scaleCanvas = function(width) {
     var pct = Math.round(600/width * 100);
     if (pct < 100) {
         canvas.style.width = '100%'; // shrink large; leave smaller alone
+        canvas.style.height = '100%'
     }
 };
 
@@ -173,7 +174,7 @@ var buildgif = function(gifdata) {
     document.getElementById('progress_bar').className = 'loading';
 
     // TODO: steps are not correct for the "new" method
-    var stepsTotal = (pixel8.maxSteps * 2) + 1;
+    var stepsTotal = (pixel8.maxSteps * 2);
     gifdata.stepsTotal = stepsTotal;
 
     // TODO: notify that gif-assembly is beginning
@@ -195,14 +196,9 @@ var buildgif = function(gifdata) {
 
 
 var startGif = function(gifobj) {
-    // store original as first frame, w/ 1/2 delay
-
     encoder.setRepeat(0);
-    encoder.setDelay(500);
     encoder.setSize(gifobj.width, gifobj.height);
     encoder.start();
-
-    encoder.addFrame(gifobj/frames[0].data, true);
     encoder.setDelay(pixel8.delay);
     console.log('speed: ' + pixel8.delay);
 };

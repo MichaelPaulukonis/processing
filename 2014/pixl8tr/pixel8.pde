@@ -50,8 +50,8 @@ void draw() {
 
 
 void buildGif() {
-  image(img, 0, 0);
-  frames.push(externals.context.getImageData(0,0,width,height));
+  // image(img, 0, 0);
+  // frames.push(externals.context.getImageData(0,0,width,height));
 
   // reset
   // we don't store frames in "test mode" since any variable may change prior to build
@@ -168,18 +168,15 @@ void pixelateImageCenter(int pxSize) {
 // ahhhhhhhhh, if this number is too high, things get bananas
 // we need a better grasp of what's going on
 void pixelateImageDivides(int pxSize) {
-  // console.log(pxSize);
   // treats pxSize as a count, instead
-  float xWidth = width / pxSize;
-  float yHeight = height / pxSize;
+  int xWidth = (int)width / pxSize;
+  int yHeight = (int)height / pxSize;
 
-  for (float x = 0; x < width; x += xWidth) {
-    for (float y = 0; y < height; y += yHeight) {
+  for (int x = 0; x < width; x += xWidth) {
+    for (int y = 0; y < height; y += yHeight) {
       Color c = getColor(x, y, xWidth);
-      console.log(c);
       fill(c);
-      // console.log(x, y, xWidth, yHeight);
-      rect(x, y, xWidth, yHeight);
+      rect(x, y, xWidth+2, yHeight+2);
     }
   }
 }

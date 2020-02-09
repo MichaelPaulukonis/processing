@@ -5,11 +5,14 @@ Animated gifs of image undergoing successive pixellation
 ## Originall in Processing, then Processing.js
 
 I do not know if this works standalone (ie, as a Processing sketch on desktop) anymore. Doubtful.
+Processing.js used the pixel8.pde - this is hot-loaded in `gui.js`
 
 ## Roadmap
 
-- break apart `upload.js` which contains both notes and gui and other code
+- ~break apart `upload.js` which contains both notes and gui and other code~
 - convert to p5js and other GUIS, maybe?
+  - Make the js modular FIRST, as that will be required to get the p5js version working (I think)
+  - the first conversion attempt was a slow failure
 - Add a slider to allow to skip to different frames
 - Allow to download each frame individually (or as a set of frames)
 - select different focus location for the pixellation

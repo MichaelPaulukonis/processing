@@ -1,14 +1,3 @@
-var uri = "",
-    iwidth = 100,
-    iheight = 100,
-    singlestep = false,
-    binary_gif,
-    gif_url,
-    gifOut,
-    buildmode = false,
-    progress = document.querySelector('.percent'),
-    frames = [];
-
 
 function getProcessingSketchId () { return 'jstest'; }
 
@@ -22,28 +11,6 @@ var savecanvas = function() {
 
 var log = function(msg) {
     if (console && console.log) console.log(msg);
-};
-
-var build = function() {
-    log('buildGif');
-    gifOut.removeAttribute('src');
-    getProcessingInstance(getProcessingSketchId()).loop();
-    buildmode = true;
-};
-
-
-var pixel8 = {
-    paused: false,
-    delay: 100,
-    initialSize: 5,
-    stepSize: 5,
-    maxSteps: 20,
-    step: function() { log('step'); singlestep = true; },
-    build: build,
-    saveframe: savecanvas,
-    type: 2,
-    dMin: 5,
-    dMax: 20
 };
 
 var getProcessingInstance = function(id) {
@@ -86,7 +53,6 @@ var setupGui = function() {
         gui.add(pixel8, 'stepSize').min(1).max(50).step(1);
         gui.add(pixel8, 'maxSteps').min(1).max(100).step(1);
         gui.add(pixel8, 'build');
-        gui.add(pixel8, 'saveframe');
         gui.add(pixel8, 'type', { UpperLeft: 0, Center: 1, Divvy: 2 } );
 
         gui.add(pixel8, 'dMin').min(1).max(20).step(1);
@@ -168,50 +134,4 @@ dropZone.addEventListener('drop', handleFileSelect, false);
 dropZone.ondragend = function() {
     this.className = '';
     return false;
-};
-
-var buildgif = function(gifdata) {
-    // build the gif AFTER we generate the frames
-    document.getElementById('progress_bar').className = 'loading';
-
-    // TODO: steps are not correct for the "new" method
-    var stepsTotal = (pixel8.maxSteps * 2) + 1;
-    gifdata.stepsTotal = stepsTotal;
-
-    // TODO: notify that gif-assembly is beginning
-
-    log('starting worker build');
-    var gifworker = new Worker('gif-worker.js');
-    gifworker.onmessage = function(event) {
-        if (event.data.type === 'progress') {
-            updateProgress(event.data.stepsDone, event.data.stepsTotal);
-        } else if (event.data.type === 'gif') {
-            gifOut.src = event.data.datauri;
-            gifOut.parentElement.style.width = iwidth + 'px';
-            progress.style.width = '100%';
-            progress.textContent = '100%';
-        }
-    };
-    gifworker.postMessage(gifdata);
-};
-
-
-var startGif = function(gifobj) {
-    // store original as first frame, w/ 1/2 delay
-
-    encoder.setRepeat(0);
-    encoder.setDelay(pixel8.delay);
-    encoder.setSize(gifobj.width, gifobj.height);
-    encoder.start();
-
-    encoder.addFrame(gifobj/frames[0].data, true);
-    encoder.setDelay(pixel8.delay);
-    console.log('speed: ' + pixel8.delay);
-};
-
-var endGif = function() {
-    encoder.finish();
-    binary_gif = encoder.stream().getData();
-    gif_url = 'data:image/gif;base64,' + encode64(binary_gif);
-    gifOut.src = gif_url;
 };

@@ -15,10 +15,10 @@ boolean firstFrame = true;
 boolean buildStarted = false;
 
 void setup() {
-  size(iwidth, iheight);
+  size(pixel8.iwidth, pixel8.iheight);
   noStroke();
-  scaleCanvas(iwidth);
-  img = loadImage(uri); // still has a loading time....
+  scaleCanvas(pixel8.iwidth);
+  img = loadImage(pixel8.uri); // still has a loading time....
   m = millis();
 }
 
@@ -32,15 +32,15 @@ void draw() {
   // "build-gif" is launched
   // then we will start from ground zero and loop around.
 
-  if (buildmode) {
+  if (pixel8.buildmode) {
     noLoop();
     buildGif();
-    buildmode = false;
+    pixel8.buildmode = false;
   } else {
-    if (pixel8.paused && singlestep == true) {
+    if (pixel8.paused && pixel8.singlestep == true) {
       drawPix();
       m = millis();
-      singlestep = false;
+      pixel8.singlestep = false;
     } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
       drawPix();
       m = millis();
@@ -62,11 +62,11 @@ void buildGif() {
   // repeat it on the back end....
   while (revCount !== 1) {
     drawPix();
-    frames.push(externals.context.getImageData(0,0,width,height));
+    pixel8.frames.push(externals.context.getImageData(0,0,width,height));
   }
 
   var workerobj = {
-    'frames': frames,
+    'frames': pixel8.frames,
     'delay': pixel8.delay,
     'width': width,
     'height': height

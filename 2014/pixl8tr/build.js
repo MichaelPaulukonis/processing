@@ -1,19 +1,8 @@
-var uri = "",
-    iwidth = 100,
-    iheight = 100,
-    singlestep = false,
-    binary_gif,
-    gif_url,
-    gifOut,
-    buildmode = false,
-    progress = document.querySelector('.percent'),
-    frames = [];
-
 var build = function () {
-    log('buildGif');
-    gifOut.removeAttribute('src');
+    console.log('buildGif');
+    pixel8.gifOut.removeAttribute('src');
     getProcessingInstance(getProcessingSketchId()).loop();
-    buildmode = true;
+    pixel8.buildmode = true;
 };
 
 var buildgif = function (gifdata) {
@@ -26,16 +15,15 @@ var buildgif = function (gifdata) {
 
     // TODO: notify that gif-assembly is beginning
 
-    log('starting worker build');
+    console.log('starting worker build');
     var gifworker = new Worker('gif-worker.js');
     gifworker.onmessage = function (event) {
         if (event.data.type === 'progress') {
             updateProgress(event.data.stepsDone, event.data.stepsTotal);
         } else if (event.data.type === 'gif') {
-            gifOut.src = event.data.datauri;
-            gifOut.parentElement.style.width = iwidth + 'px';
-            progress.style.width = '100%';
-            progress.textContent = '100%';
+            pixel8.gifOut.src = event.data.datauri;
+            pixel8.gifOut.parentElement.style.width = pixel8.iwidth + 'px';
+            updateProgress(event.data.stepsDone, event.data.stepsTotal);
         }
     };
     gifworker.postMessage(gifdata);

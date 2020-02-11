@@ -28,12 +28,10 @@ When you like what you see, generate an animated GIF !
 whee.
 
 TODO:
-DONE drag-n-drop
 better looking interface (ANY, really)
 ** TODO better instructions
 ** TODO notification that frame-building is starting
 ** DONE output gif is centered
-** INPROGRESS progress-bar of conversion
 *** depends upon webworker code
 ** INPROGRESS on-screen notes as to what this is/what is does
 ** INPROGRESS on-screen notes as to what was used
@@ -44,7 +42,6 @@ CANCELLED optionally use fixed canvas size, and clip image?
 ** yech. this isn't a swiss-army knife.
 optionally used scaled block (that is -- scaled to size of canvas)
 ** this was in the original code I looked at
-
 
 built using:
 

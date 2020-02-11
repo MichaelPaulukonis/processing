@@ -18,11 +18,11 @@ var cleanUp = function () {
     if (oldp) oldp.exit();
 
     removeOldCanvas();
-    pixel8.gifOut.removeAttribute('src');
+    params.gifOut.removeAttribute('src');
 
     setupGui();
-    pixel8.buildmode = false;
-    pixel8.frames = [];
+    params.buildmode = false;
+    params.frames = [];
     document.getElementById('progress_bar').className = '';
 };
 
@@ -40,17 +40,17 @@ var setupGui = function () {
         // anything below 0.02 millis is rounded up to... .10 (ie, 10 => 100)
         // WTF
         // http://nullsleep.tumblr.com/post/16524517190/animated-gif-minimum-frame-delay-browser-compatibility
-        gui.add(pixel8, 'delay').min(20).max(1000).step(10);
-        gui.add(pixel8, 'paused');
-        gui.add(pixel8, 'step'); // advance one frame (when paused)
-        gui.add(pixel8, 'initialSize');
-        gui.add(pixel8, 'stepSize').min(1).max(50).step(1);
-        gui.add(pixel8, 'maxSteps').min(1).max(100).step(1);
-        gui.add(pixel8, 'build');
-        gui.add(pixel8, 'type', { UpperLeft: 0, Center: 1, Divvy: 2 });
+        gui.add(params, 'delay').min(20).max(1000).step(10);
+        gui.add(params, 'paused');
+        gui.add(params, 'step'); // advance one frame (when paused)
+        gui.add(params, 'initialSize');
+        gui.add(params, 'stepSize').min(1).max(50).step(1);
+        gui.add(params, 'maxSteps').min(1).max(100).step(1);
+        gui.add(params, 'build');
+        gui.add(params, 'type', { UpperLeft: 0, Center: 1, Divvy: 2 });
 
-        gui.add(pixel8, 'dMin').min(1).max(20).step(1);
-        gui.add(pixel8, 'dMax').min(2).max(50).step(1);
+        gui.add(params, 'dMin').min(1).max(20).step(1);
+        gui.add(params, 'dMax').min(2).max(50).step(1);
 
     }
 };
@@ -92,18 +92,18 @@ var handleFileSelect = function (evt) {
         // Closure to capture the file information.
         reader.onload = (function (theFile) {
             return function (e) {
-                pixel8.gifOut = document.getElementById('generated');
+                params.gifOut = document.getElementById('generated');
                 var img = document.getElementById('uploaded');
-                pixel8.uri = e.target.result;
-                document.getElementById('uploaded').src = pixel8.uri;
+                params.uri = e.target.result;
+                document.getElementById('uploaded').src = params.uri;
 
                 img.onload = function () {
-                    pixel8.iwidth = img.width;
-                    pixel8.iheight = img.height;
+                    params.iwidth = img.width;
+                    params.iheight = img.height;
                     cleanUp();
                     var c = document.createElement('canvas');
-                    c.setAttribute('width', pixel8.iwidth);
-                    c.setAttribute('height', pixel8.iheight);
+                    c.setAttribute('width', params.iwidth);
+                    c.setAttribute('height', params.iheight);
                     c.setAttribute('id', getProcessingSketchId());
                     var placeholder = document.querySelector('#placeholder');
                     placeholder.appendChild(c);

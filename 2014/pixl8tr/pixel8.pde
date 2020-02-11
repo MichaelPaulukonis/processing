@@ -6,7 +6,7 @@
 // is that even possible ?!?!?!?
 
 PImage img;
-int pixSize = pixel8.initialSize;
+int pixSize = params.initialSize;
 int stepCount = 1;
 int m;
 int autoDirection = 1; // direction of expansion
@@ -15,10 +15,10 @@ boolean firstFrame = true;
 boolean buildStarted = false;
 
 void setup() {
-  size(pixel8.iwidth, pixel8.iheight);
+  size(params.iwidth, params.iheight);
   noStroke();
-  scaleCanvas(pixel8.iwidth);
-  img = loadImage(pixel8.uri); // still has a loading time....
+  scaleCanvas(params.iwidth);
+  img = loadImage(params.uri); // still has a loading time....
   m = millis();
 }
 
@@ -32,16 +32,16 @@ void draw() {
   // "build-gif" is launched
   // then we will start from ground zero and loop around.
 
-  if (pixel8.buildmode) {
+  if (params.buildmode) {
     noLoop();
     buildGif();
-    pixel8.buildmode = false;
+    params.buildmode = false;
   } else {
-    if (pixel8.paused && pixel8.singlestep == true) {
+    if (params.paused && params.singlestep == true) {
       drawPix();
       m = millis();
-      pixel8.singlestep = false;
-    } else if (!pixel8.paused && (millis() - m > pixel8.delay)) {
+      params.singlestep = false;
+    } else if (!params.paused && (millis() - m > params.delay)) {
       drawPix();
       m = millis();
     }
@@ -56,18 +56,18 @@ void buildGif() {
   // reset
   // we don't store frames in "test mode" since any variable may change prior to build
   revCount = 0;
-  pixSize = pixel8.initialSize;
+  pixSize = params.initialSize;
 
   // only build the FIRST iteration
   // repeat it on the back end....
   while (revCount !== 1) {
     drawPix();
-    pixel8.frames.push(externals.context.getImageData(0,0,width,height));
+    params.frames.push(externals.context.getImageData(0,0,width,height));
   }
 
   var workerobj = {
-    'frames': pixel8.frames,
-    'delay': pixel8.delay,
+    'frames': params.frames,
+    'delay': params.delay,
     'width': width,
     'height': height
   };
@@ -85,16 +85,16 @@ int setPixSize(int direction, int pixSize, int stepSize) {
 // loop purely for manual monitoring
 // for export [for, say, a gif], do it faster
 void drawPix() {
-  pixSize = setPixSize(autoDirection, pixSize, pixel8.stepSize);
-  if (pixel8.type == 0) {
+  pixSize = setPixSize(autoDirection, pixSize, params.stepSize);
+  if (params.type == 0) {
     pixelateImageUpperLeft(pixSize);
-  } else if (pixel8.type == 1) {
+  } else if (params.type == 1) {
     pixelateImageCenter(pixSize);
-  } else if (pixel8.type == 2) {
+  } else if (params.type == 2) {
     pixelateImageDivides(stepCount);
     stepCount += autoDirection;
-    if (stepCount > pixel8.dMax || stepCount < pixel8.dMin) {
-      stepCount = constrain(stepCount, pixel8.dMin, pixel8.dMax)
+    if (stepCount > params.dMax || stepCount < params.dMin) {
+      stepCount = constrain(stepCount, params.dMin, params.dMax)
       autoDirection *= -1;
       revCount++;
     }
@@ -103,8 +103,8 @@ void drawPix() {
 
   stepCount += autoDirection;
   // this does not nesc get us back to ZERO
-  var curSize = (pixel8.stepSize * pixel8.maxSteps) + pixel8.initialSize;
-  if (pixSize >= curSize || pixSize <= pixel8.stepSize
+  var curSize = (params.stepSize * params.maxSteps) + params.initialSize;
+  if (pixSize >= curSize || pixSize <= params.stepSize
       || pixSize >= width || pixSize >= height) {
     if (pixSize >= curSize) pixSize = curSize;
     if (pixSize > width) pixSize = width;

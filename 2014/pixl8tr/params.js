@@ -1,4 +1,4 @@
-var pixel8 = {
+var params = {
     paused: false,
     delay: 100,
     initialSize: 5,

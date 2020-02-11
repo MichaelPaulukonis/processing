@@ -1,8 +1,8 @@
 var build = function () {
     console.log('buildGif');
-    pixel8.gifOut.removeAttribute('src');
+    params.gifOut.removeAttribute('src');
     getProcessingInstance(getProcessingSketchId()).loop();
-    pixel8.buildmode = true;
+    params.buildmode = true;
 };
 
 var buildgif = function (gifdata) {
@@ -10,7 +10,7 @@ var buildgif = function (gifdata) {
     document.getElementById('progress_bar').className = 'loading';
 
     // TODO: steps are not correct for the "new" method
-    var stepsTotal = (pixel8.maxSteps * 2) + 1;
+    var stepsTotal = (params.maxSteps * 2) + 1;
     gifdata.stepsTotal = stepsTotal;
 
     // TODO: notify that gif-assembly is beginning
@@ -21,8 +21,8 @@ var buildgif = function (gifdata) {
         if (event.data.type === 'progress') {
             updateProgress(event.data.stepsDone, event.data.stepsTotal);
         } else if (event.data.type === 'gif') {
-            pixel8.gifOut.src = event.data.datauri;
-            pixel8.gifOut.parentElement.style.width = pixel8.iwidth + 'px';
+            params.gifOut.src = event.data.datauri;
+            params.gifOut.parentElement.style.width = params.iwidth + 'px';
             updateProgress(event.data.stepsDone, event.data.stepsTotal);
         }
     };
@@ -31,5 +31,5 @@ var buildgif = function (gifdata) {
 
 
 (() => {
-    pixel8.build = build
+    params.build = build
 })()

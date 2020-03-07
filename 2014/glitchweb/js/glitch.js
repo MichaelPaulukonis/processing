@@ -1,38 +1,12 @@
-var glitchweb = function() {
-
+var glitchweb = function () {
     var generation = 0,
         glitches = [],
         autorun = false,
         running = false,
         gallery = G;
 
-
-    // Avoid `console` errors in browsers that lack a console.
-    // http://stackoverflow.com/a/7585409/41153
-    (function() {
-        var method;
-        var noop = function () {};
-        var methods = [
-            'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
-            'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
-            'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
-            'timeStamp', 'trace', 'warn'
-        ];
-        var length = methods.length;
-        var console = (window.console = window.console || {});
-
-        while (length--) {
-            method = methods[length];
-
-            // Only stub undefined methods.
-            if (!console[method]) {
-                console[method] = noop;
-            }
-        }
-    }());
-
     // poorly named, now that it returns b64 AND frame-data
-    var getBase64Image = function(img) {
+    var getBase64Image = function (img) {
         // Create an empty canvas element
         var canvas = document.createElement("canvas");
         canvas.width = img.width;
@@ -58,17 +32,17 @@ var glitchweb = function() {
         // will re-encode the image.
         var dataURL = canvas.toDataURL("image/jpeg");
 
-        var data = { uri: dataURL.replace(/^data:image\/(png|jpeg);base64,/, ""),
-                     frame: ctx.getImageData(0,0, canvas.width, canvas.height)
-                   };
+        var data = {
+            uri: dataURL.replace(/^data:image\/(png|jpeg);base64,/, ""),
+            frame: ctx.getImageData(0, 0, canvas.width, canvas.height)
+        };
 
         return data;
-
     };
 
 
-    var undo = function() {
-        debugger;
+    var undo = function () {
+        // debugger; // does not seem to be working.......
         console.log('undo from gen ' + generation + ' to ' + (generation - 1));
         generation--;
         if (glitches.length > 0) glitches.length--;
@@ -79,22 +53,20 @@ var glitchweb = function() {
     };
 
 
-    var getImageAsByteArray = function(b64) {
-
+    var getImageAsByteArray = function (b64) {
         // transform to intarry and back
         // as we manipulate the array
         // if we can do the manipulations on the raw URI this time-sink is removed
 
         // see http://stackoverflow.com/a/12713326/41153
-        var intary = new Uint8Array(atob(b64).split("").map(function(c) {
-            return c.charCodeAt(0); }));
-
+        var intary = new Uint8Array(atob(b64).split("").map(function (c) {
+            return c.charCodeAt(0);
+        }));
         return intary;
-
     };
 
 
-    var glitchit = function(transform) {
+    var glitchit = function (transform) {
 
         var img = document.getElementById('source');
         var data = getBase64Image(img);
@@ -109,23 +81,24 @@ var glitchweb = function() {
 
         updateGeneration(++generation);
 
-        // see http://stackoverflow.com/a/12713326/41153
-        var out64 =  btoa(String.fromCharCode.apply(null, mod1));
+        // see http://stackoverflow.com/a/12713326/41153 (original source for deleted code)
+        // this version from comment @ https://github.com/axios/axios/issues/513
+        let b64encoded = btoa([].reduce.call(mod1, (p, c) => p + String.fromCharCode(c), ''))
 
         var glitched = document.createElement('img');
-        glitched.src = "data:image/jpeg;base64," + out64;
-        glitched.id = 'source';
-        glitched.onerror = function() {
-            // TODO: this should be conditional
-            // plus, fails in IE - wrap the console1
-            console.log('previous glitch was un-renderable');
-            undo();
-        };
-        glitched.onload = function() {
+        glitched.onload = function () {
             addThumb(glitched.src, generation);
             if (autorun) {
                 glitchit(transform);
             };
+        };
+        glitched.src = "data:image/jpeg;base64," + b64encoded;
+        glitched.id = 'source';
+        glitched.onerror = function () {
+            // TODO: this should be conditional
+            // plus, fails in IE - wrap the console1
+            console.log('previous glitch was un-renderable');
+            undo();
         };
 
         glitches[generation] = glitched.src;
@@ -133,32 +106,25 @@ var glitchweb = function() {
 
         var targets = document.getElementById('targets');
         targets.removeChild(img);
-
         targets.appendChild(glitched);
-
     };
-
 
     // Returns a random integer between min and max
     // Using Math.round() will give you a non-uniform distribution!
-    function getRandomInt(min, max) {
+    function getRandomInt (min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    var transform1 = function(intary) {
-
+    var transform1 = function (intary) {
         for (var i = 0; i < 4; i++) {
             var loc = getRandomInt(128, intary.length);
             var newval = getRandomInt(0, 255);
             intary[loc] = newval;
         }
-
         return intary;
-
     };
 
-    var transform2 = function(intary) {
-
+    var transform2 = function (intary) {
         var loc1 = getRandomInt(128, intary.length);
         var loc2 = getRandomInt(128, intary.length);
         var val1 = intary[loc1];
@@ -173,17 +139,13 @@ var glitchweb = function() {
         }
 
         return intary;
-
     };
 
-    var updateGeneration = function(gen) {
-
+    var updateGeneration = function (gen) {
         document.getElementById('generation').textContent = gen;
-
     };
 
-    var reset = function() {
-
+    var reset = function () {
         var orig = document.getElementById('original');
         var source = document.getElementById('source');
         source.src = orig.src;
@@ -194,21 +156,17 @@ var glitchweb = function() {
         generation = 0;
         updateGeneration(generation);
         glitches = [];
-
     };
 
-    var storeInSource = function(uri) {
-
+    var storeInSource = function (uri) {
         var source = $('#source')[0];
         source.src = uri;
 
     };
 
     // http://www.html5rocks.com/en/tutorials/file/dndfiles/
-    var handleFileSelect = function(evt) {
-
+    var handleFileSelect = function (evt) {
         this.className = ''; // clear the class set in dragOver
-
         evt.stopPropagation();
         evt.preventDefault();
 
@@ -216,7 +174,6 @@ var glitchweb = function() {
         var files = evt.target.files || evt.dataTransfer.files; // FileList object
         var f = files[0];
 
-        // Only process image files.
         if (!f.type.match('image.*')) {
             console.log(f.type + ' is not an image file');
             return;
@@ -225,74 +182,65 @@ var glitchweb = function() {
         var reader = new FileReader();
 
         // Closure to capture the file information.
-        reader.onload = (function(theFile) {
-
-            return function(e) {
-
+        reader.onload = (_ => {
+            return (e) => {
                 var org = document.getElementById('original');
                 var source = document.getElementById('source');
-                var uri = e.target.result;
-                org.src = uri;
-                source.src = uri;
-
-                org.onload = function(src) {
+                org.onload = function (src) {
                     // hrm. do anything?
                     storeOrig(org);
                 };
-
+                var uri = e.target.result;
+                org.src = uri;
+                source.src = uri;
             };
         })(f);
 
-        // Read in the image file as a data URL.
         reader.readAsDataURL(f);
-
     };
 
 
-    var  handleDragOver = function(evt) {
+    var handleDragOver = function (evt) {
         evt.stopPropagation();
         evt.preventDefault();
         evt.dataTransfer.dropEffect = 'copy';
         this.className = 'is_hover';
     };
 
-    var activateGlitchButtons = function() {
-
-        activate('glitcher', function() { glitchit(transform1); });
-        activate('glitcher2', function() { glitchit(transform2); });
-
+    var activateGlitchButtons = function () {
+        activate('glitcher', function () { glitchit(transform1); });
+        activate('glitcher2', function () { glitchit(transform2); });
     };
 
-    var storeOrig = function(img) {
-
+    var storeOrig = function (img) {
         var data = getBase64Image(img);
         glitches[generation] = "data:image/jpeg;base64," + data.uri;
-        glitches[generation] = { uri: "data:image/jpeg;base64," + data.uri,
-                                 frame: data.frame
-                               };
+        glitches[generation] = {
+            uri: "data:image/jpeg;base64," + data.uri,
+            frame: data.frame
+        };
 
     };
 
-    var getThumbArea = function() {
+    var getThumbArea = function () {
         return $('#thumbs');
     };
 
     // not completely happy w/ returning ts as a side-effect
     // but we don't "waste" resources
     // "premature optimization is the root of all evil"
-    var clearThumbs = function() {
+    var clearThumbs = function () {
         var ts = getThumbArea();
         ts.empty(); // clear out any previous thumbs
         return ts; // side-effect
     };
 
-    var deleter = function() {
-
-        if(confirm('Delete all checked images?')) {
-            $('input[type=checkbox]:checked').parent().each(function() {
+    var deleter = function () {
+        if (confirm('Delete all checked images?')) {
+            $('input[type=checkbox]:checked').parent().each(function () {
                 // problem -- what index are we in glitches[]
                 var idx = parseInt($(this).find('img').attr('id').replace('glitch', ''), 10);
-                glitches.splice(idx,1);
+                glitches.splice(idx, 1);
                 this.remove();
             });
             generation = $('.thumb').length;
@@ -300,38 +248,31 @@ var glitchweb = function() {
         }
     };
 
-    var addThumb = function(uri, idx) {
-
-
-        $div = $('<div></div>', {'class': 'container'});
+    var addThumb = function (uri, idx) {
+        $div = $('<div></div>', { 'class': 'container' });
         var img = document.createElement('img');
         img.src = uri;
         img.className = 'thumb';
         img.id = 'glitch' + idx;
 
-        $chk = $('<input />', {type: 'checkbox', id: 'chk' + idx, value: img.id, 'class': 'checkbox'});
+        $chk = $('<input />', { type: 'checkbox', id: 'chk' + idx, value: img.id, 'class': 'checkbox' });
 
         $div.append(img);
         $div.append($chk);
 
         getThumbArea().append($div);
 
-        $img = $('#'+img.id);
-
-        $img.bind('dblclick', function(event) {
+        $img = $('#' + img.id);
+        $img.bind('dblclick', function (event) {
             // this is the actual image clicked-on.
             gallery.init(this);
         });
-
         // gallery.add($img[0]);
-
     };
 
 
-    var makeGif = function() {
-
+    var makeGif = function () {
         var frames = [];
-
         for (var i = 0; i < glitches.length; i++) {
             console.log(i);
             frames.push(glitches[i].frame);
@@ -357,13 +298,10 @@ var glitchweb = function() {
 
         debugger;
         buildgif(workerobj);
-
     };
 
-    var buildgif = function(gifdata) {
-
+    var buildgif = function (gifdata) {
         //document.getElementById('progress_bar').className = 'loading';
-
         // TODO: notify that gif-assembly is beginning
 
         console.log('starting worker build');
@@ -371,7 +309,7 @@ var glitchweb = function() {
         // TODO: needs to be rebuilt, as its a back-n-forth generator
         var gifworker = new Worker('/js/gif-worker.js');
 
-        gifworker.onmessage = function(event) {
+        gifworker.onmessage = function (event) {
             if (event.data.type === 'progress') {
                 // updateProgress(event.data.stepsDone, event.data.stepsTotal);
                 console.log('stepsdone: ' + event.data.stepsDone + ' stepsTotal: ' + event.data.stepsTotal);
@@ -386,70 +324,57 @@ var glitchweb = function() {
                 // progress.textContent = '100%';
             }
         };
-
         gifworker.postMessage(gifdata);
-
     };
 
 
-    var bindButton = function(selector, fn) {
-
+    var bindButton = function (selector, fn) {
         var btn = document.getElementById(selector);
         if (btn) {
             btn.disabled = false;
             btn.onclick = fn;
         }
-
     };
 
-    var init = function() {
-
-        $('#source').bind('load', function() {
+    var init = function () {
+        $('#source').bind('load', function () {
             $('#targets').width($(this).width());
         });
 
         var img = document.getElementById('original');
-        img.onload = function() {
-
+        img.onload = function () {
             // gallery.init();
             addThumb(img.src, generation);
             storeOrig(img);
 
-            bindButton('reset', reset);
-            bindButton('glitcher', function() { glitchit(transform1); });
-            bindButton('glitcher2', function() { glitchit(transform2); });
-            bindButton('undo', undo);
-            bindButton('deletechecked', deleter);
-            bindButton('makegif', makeGif);
-
-            var chk = document.getElementById('autorun');
-            if (chk) {
-                chk.onchange = function() {
-                    console.log('changed!');
-                    if (this.checked) {
-                        autorun = true;
-                    } else {
-                        autorun = false;
-                    }
-                };
-            };
-
             updateGeneration(generation);
+        };
+        bindButton('reset', reset);
+        bindButton('glitcher', function () { glitchit(transform1); });
+        bindButton('glitcher2', function () { glitchit(transform2); });
+        bindButton('undo', undo);
+        bindButton('deletechecked', deleter);
+        bindButton('makegif', makeGif);
 
-            var dropZone = document.getElementById('targets');
-            dropZone.addEventListener('dragover', handleDragOver, false);
-            dropZone.addEventListener('drop', handleFileSelect, false);
-
-            dropZone.ondragend = function() {
-                this.className = '';
-                return false;
+        var chk = document.getElementById('autorun');
+        if (chk) {
+            chk.onchange = function () {
+                console.log('changed!');
+                autorun = this.checked
             };
-
         };
 
+        var dropZone = document.getElementById('targets');
+        dropZone.addEventListener('dragover', handleDragOver, false);
+        dropZone.addEventListener('drop', handleFileSelect, false);
+
+        dropZone.ondragend = function () {
+            this.className = '';
+            return false;
+        };
     };
 
-    var deleteImage = function(id) {
+    var deleteImage = function (id) {
         var idx = parseInt(id.replace('glitch', ''), 10);
         generation--;
         updateGeneration(generation);
@@ -462,8 +387,6 @@ var glitchweb = function() {
         storeInSource: storeInSource,
         deleteImage: deleteImage
     };
-
-
 }();
 
 glitchweb.init();

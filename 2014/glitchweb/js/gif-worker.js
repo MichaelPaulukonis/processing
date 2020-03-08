@@ -14,7 +14,6 @@ onmessage = function(event) {
         stepsDone = 1,
         stepsTotal = gifobj.frames.length;
 
-
     // hrm. what're the docs on gifobj...
     var startGif = function(gifobj) {
         // store original as first frame, w/ 1/2 delay
@@ -29,7 +28,6 @@ onmessage = function(event) {
 
         encoder.addFrame(gifobj.frames[0].data, true);
         encoder.setDelay(gifobj.delay);
-
     };
 
     self.postMessage({type: 'message', message: 'stepsTotal: ' + stepsTotal}); //+ gifobj.frames.length});

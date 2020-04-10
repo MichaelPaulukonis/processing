@@ -65,3 +65,6 @@ http://processingjs.org/reference/loadImage_/
 http://forum.processing.org/one/topic/how-to-load-an-image-in-base64-with-processing-js.html
 
 http://makeitsolutions.com/labs/jic/
+
+
+https://github.com/snorpey/Animated_GIF
